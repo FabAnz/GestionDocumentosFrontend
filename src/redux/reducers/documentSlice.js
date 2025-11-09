@@ -5,7 +5,8 @@ const initialState = {
     documentCount: 0,
     loading: false,
     editingDocument: null,
-    isSubmitting: false
+    isSubmitting: false,
+    activeFilter: 'Todo'
 }
 
 export const documentSlice = createSlice({
@@ -51,6 +52,9 @@ export const documentSlice = createSlice({
                 doc => (doc.id !== documentId) && (doc._id !== documentId)
             )
             state.documentCount = state.documents.length
+        },
+        setActiveFilter: (state, action) => {
+            state.activeFilter = action.payload
         }
     }
 })
@@ -64,7 +68,38 @@ export const {
     setEditingDocument,
     clearEditingDocument,
     setSubmitting,
-    deleteDocument
+    deleteDocument,
+    setActiveFilter
 } = documentSlice.actions
+
+// Selector para obtener documentos filtrados por fecha
+export const selectFilteredDocuments = (state) => {
+    const { documents, activeFilter } = state.documents
+    
+    if (activeFilter === 'Todo') {
+        return documents
+    }
+    
+    const now = new Date()
+    const filterDate = new Date()
+    
+    switch (activeFilter) {
+        case 'Ultima Semana':
+            filterDate.setDate(now.getDate() - 7)
+            break
+        case 'Ultimo Mes':
+            filterDate.setMonth(now.getMonth() - 1)
+            break
+        default:
+            return documents
+    }
+    
+    return documents.filter(doc => {
+        if (!doc.updatedAt) return false
+        const docDate = new Date(doc.updatedAt)
+        return docDate >= filterDate
+    })
+}
+
 export default documentSlice.reducer
 

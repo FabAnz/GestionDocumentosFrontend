@@ -6,7 +6,7 @@ import { Folder, Plus } from 'lucide-react'
 import { Card } from '../ui/card'
 import { CardTitle } from '../atoms/CardTitle'
 import { FilterPill } from '../molecules/FilterPill'
-import { setDocuments, setLoading, setDocumentCount, clearEditingDocument } from '../../redux/reducers/documentSlice'
+import { setDocuments, setLoading, setDocumentCount, clearEditingDocument, setActiveFilter, selectFilteredDocuments } from '../../redux/reducers/documentSlice'
 import { DocumentList } from '../molecules/DocumentList'
 import { Button } from '../ui/button'
 import {
@@ -23,7 +23,8 @@ export const Documents = () => {
     const dispatch = useDispatch()
     const editingDocument = useSelector(state => state.documents.editingDocument)
     const isSubmitting = useSelector(state => state.documents.isSubmitting)
-    const [activeFilter, setActiveFilter] = useState('Todo')
+    const activeFilter = useSelector(state => state.documents.activeFilter)
+    const filteredDocuments = useSelector(selectFilteredDocuments)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const toastIdRef = useRef(null)
     const isEditingRef = useRef(false)
@@ -138,19 +139,19 @@ export const Documents = () => {
             <div className="flex gap-2 mt-4">
                 <FilterPill
                     active={activeFilter === 'Todo'}
-                    onClick={() => setActiveFilter('Todo')}
+                    onClick={() => dispatch(setActiveFilter('Todo'))}
                 >
                     Todo
                 </FilterPill>
                 <FilterPill
                     active={activeFilter === 'Ultima Semana'}
-                    onClick={() => setActiveFilter('Ultima Semana')}
+                    onClick={() => dispatch(setActiveFilter('Ultima Semana'))}
                 >
                     Ultima Semana
                 </FilterPill>
                 <FilterPill
                     active={activeFilter === 'Ultimo Mes'}
-                    onClick={() => setActiveFilter('Ultimo Mes')}
+                    onClick={() => dispatch(setActiveFilter('Ultimo Mes'))}
                 >
                     Ultimo Mes
                 </FilterPill>
@@ -158,7 +159,7 @@ export const Documents = () => {
 
             {/* Lista de documentos */}
             <div className="mt-4">
-                <DocumentList />
+                <DocumentList documents={filteredDocuments} />
             </div>
 
             {/* Modal para agregar/editar documento */}

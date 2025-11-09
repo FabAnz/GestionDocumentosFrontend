@@ -4,8 +4,8 @@ import { FileText } from 'lucide-react'
 import { Spinner } from '../ui/spinner'
 import { DocumentItem } from './DocumentItem'
 
-export const DocumentList = () => {
-    const { documents, loading } = useSelector((state) => state.documents)
+export const DocumentList = ({ documents }) => {
+    const loading = useSelector((state) => state.documents.loading)
 
     if (loading) {
         return (
