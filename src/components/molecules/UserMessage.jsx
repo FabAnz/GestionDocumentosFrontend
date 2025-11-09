@@ -41,7 +41,7 @@ export const UserMessage = ({ text, timestamp }) => {
                 "max-w-[70%] rounded-lg px-4 py-2 shadow-sm",
                 "bg-indigo-600 text-white"
             )}>
-                <p className="text-sm whitespace-pre-wrap break-words">{text}</p>
+                <p className="text-sm whitespace-pre-wrap break-words text-left">{text}</p>
                 <p className="text-xs text-indigo-100 mt-1 text-left">{formatTime(timestamp)}</p>
             </div>
             <UserAvatar size="default" />

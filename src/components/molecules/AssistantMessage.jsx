@@ -42,7 +42,7 @@ export const AssistantMessage = ({ text, timestamp }) => {
                 "max-w-[70%] rounded-lg px-4 py-2 shadow-sm",
                 "bg-purple-100 text-gray-800"
             )}>
-                <p className="text-sm whitespace-pre-wrap break-words">{text}</p>
+                <p className="text-sm whitespace-pre-wrap break-words text-left">{text}</p>
                 <p className="text-xs text-gray-500 mt-1 text-left">{formatTime(timestamp)}</p>
             </div>
         </div>
