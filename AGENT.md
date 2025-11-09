@@ -4,7 +4,9 @@
 
 Eres el **agente orquestador principal** del proyecto. Tu responsabilidad es coordinar el desarrollo de funcionalidades, estructura de componentes y lógica de negocio, delegando aspectos especializados a sub-agentes cuando sea apropiado.
 
-## ⚠️ Regla Crítica: Componentes UI
+## ⚠️ Reglas Críticas
+
+### Componentes UI
 
 **ANTES de crear CUALQUIER componente UI o aplicar estilos**:
 
@@ -13,6 +15,17 @@ Eres el **agente orquestador principal** del proyecto. Tu responsabilidad es coo
 3. Solo después de la verificación, procede con la solución proporcionada por el sub-agente
 
 **Flujo obligatorio**: Nueva necesidad de componente → Consultar Sub-Agente de Estilos → Verificación shadcn/ui → Aplicar solución
+
+### Gestión de Estado
+
+**ANTES de usar `useState` para estado local**:
+
+1. **DEBES evaluar primero si el estado debería estar en Redux** consultando al Sub-Agente de Redux (`context/sub-agents/REDUX_AGENT.md`)
+2. El sub-agente evaluará si el estado debe ser global (Redux) o local (`useState`)
+3. **SIEMPRE busca usar Redux** cuando el estado necesita ser compartido, persistir entre navegaciones, o representar datos del servidor
+4. Solo usa estado local cuando el estado es específico de un componente y no se comparte
+
+**Flujo obligatorio**: Nueva necesidad de estado → Consultar Sub-Agente de Redux → Evaluar Redux vs estado local → Aplicar solución optimizada
 
 ## Sub-Agentes Disponibles
 
@@ -26,6 +39,18 @@ Eres el **agente orquestador principal** del proyecto. Tu responsabilidad es coo
   - Aplicar estilo Claymorphism consistente
   - Usar variables CSS del tema correctamente
   - Mantener consistencia visual en todo el proyecto
+
+### Sub-Agente de Redux
+
+- **Ubicación**: `context/sub-agents/REDUX_AGENT.md`
+- **Especialización**: Gestión de estado global con Redux Toolkit, optimización de estado
+- **Cuándo consultarlo**: Antes de usar `useState` para decidir si el estado debe ser local o global, al crear nuevos slices, al migrar estado local a Redux
+- **Responsabilidades**:
+  - Evaluar si el estado debe estar en Redux o ser local
+  - Optimizar el código promoviendo Redux cuando sea apropiado
+  - Evitar estados locales innecesarios y prop drilling
+  - Diseñar slices y acciones siguiendo mejores prácticas
+  - Mantener consistencia en la gestión de estado en todo el proyecto
 
 ## Contexto del Proyecto
 
@@ -110,7 +135,9 @@ Los componentes deben ser independientes y portables siempre que sea posible.
 - Revisar contexto del proyecto en `context/` antes de cambios importantes
 - Documentar cambios significativos en comentarios del código
 
-## Delegación al Sub-Agente de Estilos
+## Delegación a Sub-Agentes
+
+### Sub-Agente de Estilos
 
 **Cuando necesites**:
 - Crear o modificar componentes UI
@@ -123,11 +150,28 @@ Los componentes deben ser independientes y portables siempre que sea posible.
 - Proporcionará código completo y estilizado siguiendo Claymorphism y shadcn/ui
 - Tú integras ese código en la estructura general del proyecto
 
+### Sub-Agente de Redux
+
+**Cuando necesites**:
+- Decidir entre estado local (`useState`) y estado global (Redux)
+- Crear o modificar slices de Redux
+- Optimizar gestión de estado
+- Migrar estado local a Redux
+- Evitar prop drilling
+
+**El sub-agente**:
+- Evaluará si el estado debe estar en Redux o ser local
+- Proporcionará estructura de slices y acciones siguiendo mejores prácticas
+- Optimizará el código promoviendo Redux cuando sea apropiado
+- Tú integras las recomendaciones en la estructura general del proyecto
+
 ## Recursos y Referencias
 
 - **Contexto del proyecto**: `context/` (requisitos específicos)
 - **Estructura de Componentes**: `context/components-structure.md` - Guía completa sobre dónde ubicar nuevos componentes
 - **Sub-Agente de Estilos**: `context/sub-agents/STYLE_AGENT.md`
+- **Sub-Agente de Redux**: `context/sub-agents/REDUX_AGENT.md`
 - **React**: https://react.dev
 - **Vite**: https://vitejs.dev
 - **shadcn/ui**: https://ui.shadcn.com
+- **Redux Toolkit**: https://redux-toolkit.js.org

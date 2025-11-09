@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import axios from 'axios'
 import { toast } from 'sonner'
@@ -13,26 +13,33 @@ import {
   SelectValue,
 } from '../ui/select'
 import { Button } from '../ui/button'
-import { addDocument, setDocumentCount } from '../../redux/reducers/documentSlice'
+import { addDocument, setDocumentCount, clearEditingDocument, updateDocument, setSubmitting } from '../../redux/reducers/documentSlice'
 
 const apiUrl = import.meta.env.VITE_API_URL
 
-export const AddDocumentForm = ({ onSubmittingChange }) => {
+export const AddDocumentForm = ({ editingDocument }) => {
   const dispatch = useDispatch()
   const [selectedFile, setSelectedFile] = useState(null)
-  const [title, setTitle] = useState('')
-  const [category, setCategory] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [title, setTitle] = useState(editingDocument?.titulo || '')
+  const [category, setCategory] = useState(editingDocument?.categoria?._id || '')
+  const isSubmitting = useSelector(state => state.documents.isSubmitting)
   const categories = useSelector(state => state.categories.categories)
   const user = useSelector(state => state.user.user)
   const documentCount = useSelector(state => state.documents.documentCount)
 
-  // Notificar al componente padre cuando cambia el estado de envío
-  React.useEffect(() => {
-    if (onSubmittingChange) {
-      onSubmittingChange(isSubmitting)
+  // Actualizar el formulario cuando cambie el documento a editar
+  useEffect(() => {
+    if (editingDocument) {
+      setTitle(editingDocument.titulo || '')
+      setCategory(editingDocument.categoria?._id || '')
+      setSelectedFile(null) // No pre-cargamos el archivo en edición
+    } else {
+      // Limpiar formulario cuando no hay documento a editar
+      setTitle('')
+      setCategory('')
+      setSelectedFile(null)
     }
-  }, [isSubmitting, onSubmittingChange])
+  }, [editingDocument])
 
   const handleFileSelect = (file) => {
     setSelectedFile(file)
@@ -42,7 +49,10 @@ export const AddDocumentForm = ({ onSubmittingChange }) => {
     setSelectedFile(null)
   }
 
-  const isFormValid = selectedFile !== null && title.trim() !== '' && category !== ''
+  // En modo edición, el archivo no es obligatorio si ya existe uno
+  const isFormValid = editingDocument 
+    ? title.trim() !== '' && category !== ''
+    : selectedFile !== null && title.trim() !== '' && category !== ''
 
   const checkPlanLimit = () => {
     if (!user?.plan) return true
@@ -67,10 +77,10 @@ export const AddDocumentForm = ({ onSubmittingChange }) => {
     e.preventDefault()
     if (!isFormValid) return
 
-    // Verificar límite del plan
-    if (!checkPlanLimit()) return
+    // Verificar límite del plan (solo para creación, no para edición)
+    if (!editingDocument && !checkPlanLimit()) return
 
-    setIsSubmitting(true)
+    dispatch(setSubmitting(true))
 
     try {
       const token = localStorage.getItem('token')
@@ -80,31 +90,62 @@ export const AddDocumentForm = ({ onSubmittingChange }) => {
 
       // Crear FormData
       const formData = new FormData()
-      formData.append('archivo', selectedFile)
       formData.append('titulo', title.trim())
       formData.append('categoria', category)
+      
+      // Solo agregar archivo si hay uno seleccionado (en edición puede no haber archivo nuevo)
+      if (selectedFile) {
+        formData.append('archivo', selectedFile)
+      }
 
-      // Enviar con axios
-      const response = await axios.post(
-        `${apiUrl}/documentos`,
-        formData,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`
-            // NO establecer Content-Type - axios lo hace automáticamente para FormData
+      let response
+      
+      if (editingDocument) {
+        // Modo edición: PUT
+        const documentId = editingDocument.id || editingDocument._id
+        response = await axios.put(
+          `${apiUrl}/documentos/${documentId}`,
+          formData,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
           }
-        }
-      )
+        )
 
-      // Éxito: mostrar notificación
-      toast.success('Documento creado exitosamente', {
-        description: `"${title}" ha sido agregado correctamente.`,
-        duration: 5000,
-      })
+        // Éxito: mostrar notificación
+        toast.success('Documento actualizado exitosamente', {
+          description: `"${title}" ha sido actualizado correctamente.`,
+          duration: 5000,
+        })
 
-      // Agregar documento a Redux
-      dispatch(addDocument(response.data))
-      dispatch(setDocumentCount(documentCount + 1))
+        // Actualizar documento en Redux
+        dispatch(updateDocument(response.data))
+      } else {
+        // Modo creación: POST
+        response = await axios.post(
+          `${apiUrl}/documentos`,
+          formData,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }
+        )
+
+        // Éxito: mostrar notificación
+        toast.success('Documento creado exitosamente', {
+          description: `"${title}" ha sido agregado correctamente.`,
+          duration: 5000,
+        })
+
+        // Agregar documento a Redux
+        dispatch(addDocument(response.data))
+        dispatch(setDocumentCount(documentCount + 1))
+      }
+
+      // Limpiar estado de edición en Redux
+      dispatch(clearEditingDocument())
 
       // Limpiar formulario
       setSelectedFile(null)
@@ -119,7 +160,7 @@ export const AddDocumentForm = ({ onSubmittingChange }) => {
 
     } catch (error) {
       // Manejo de errores usando mensajes del backend
-      let errorMessage = 'Error al subir el archivo'
+      let errorMessage = editingDocument ? 'Error al actualizar el documento' : 'Error al subir el archivo'
 
       if (error.response?.data?.message) {
         // Usar el mensaje del backend directamente
@@ -134,12 +175,12 @@ export const AddDocumentForm = ({ onSubmittingChange }) => {
         errorMessage = error.message
       }
 
-      toast.error('Error al crear documento', {
+      toast.error(editingDocument ? 'Error al actualizar documento' : 'Error al crear documento', {
         description: errorMessage,
         duration: 5000,
       })
     } finally {
-      setIsSubmitting(false)
+      dispatch(setSubmitting(false))
     }
   }
 
@@ -151,6 +192,7 @@ export const AddDocumentForm = ({ onSubmittingChange }) => {
         selectedFile={selectedFile}
         onFileRemove={handleFileRemove}
         isSubmitting={isSubmitting}
+        editingDocument={editingDocument}
       />
 
       {/* Campo de título */}
@@ -187,14 +229,17 @@ export const AddDocumentForm = ({ onSubmittingChange }) => {
         </Select>
       </div>
 
-      {/* Botón de agregar */}
+      {/* Botón de agregar/editar */}
       <Button
         type="submit"
         className="w-full rounded-md !rounded-md shadow-sm"
         variant={isFormValid ? "default" : "secondary"}
         disabled={!isFormValid || isSubmitting}
       >
-        {isSubmitting ? 'Subiendo...' : 'Agregar Documento'}
+        {isSubmitting 
+          ? (editingDocument ? 'Guardando...' : 'Subiendo...') 
+          : (editingDocument ? 'Guardar Cambios' : 'Agregar Documento')
+        }
       </Button>
     </form>
   )

@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { Spinner } from '../ui/spinner'
 
-export const FileUploadArea = ({ onFileSelect, selectedFile, onFileRemove, isSubmitting = false, className }) => {
+export const FileUploadArea = ({ onFileSelect, selectedFile, onFileRemove, isSubmitting = false, className, editingDocument }) => {
   const fileInputRef = useRef(null)
   const [isDragging, setIsDragging] = useState(false)
 
@@ -91,11 +91,18 @@ export const FileUploadArea = ({ onFileSelect, selectedFile, onFileRemove, isSub
     e.stopPropagation()
     // No permitir eliminar mientras se está subiendo
     if (isSubmitting) return
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''
-    }
-    if (onFileRemove) {
-      onFileRemove()
+    
+    // Si hay un archivo seleccionado, eliminarlo
+    if (selectedFile) {
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+      if (onFileRemove) {
+        onFileRemove()
+      }
+    } else if (editingDocument) {
+      // Si estamos en modo edición y no hay archivo seleccionado, abrir selector para reemplazar
+      fileInputRef.current?.click()
     }
   }
 
@@ -115,23 +122,28 @@ export const FileUploadArea = ({ onFileSelect, selectedFile, onFileRemove, isSub
     return fileExtension === '.pdf' || file.type === 'application/pdf'
   }
 
+  // Determinar si hay un archivo para mostrar (seleccionado o existente)
+  const hasFile = selectedFile || editingDocument
+  // El área es clickeable cuando no hay archivo seleccionado y no está subiendo
+  const isClickable = !selectedFile && !isSubmitting
+
   return (
     <div
       className={cn(
         "w-full min-w-0 rounded-md border-2 border-dashed p-8",
         "flex flex-col items-center justify-center gap-4",
         "transition-all duration-200",
-        selectedFile 
-          ? "border-primary/40 bg-accent/20 cursor-default" 
+        hasFile 
+          ? (selectedFile ? "border-primary/40 bg-accent/20 cursor-default" : "border-primary/40 bg-accent/20 cursor-pointer hover:border-primary/60")
           : "border-input bg-muted/50 cursor-pointer hover:border-primary/60 hover:bg-accent/30 hover:shadow-sm",
         isDragging && "border-primary bg-accent/50",
         isSubmitting && "opacity-60 pointer-events-none",
         className
       )}
-      onClick={handleClick}
-      onDragOver={isSubmitting ? undefined : handleDragOver}
-      onDragLeave={isSubmitting ? undefined : handleDragLeave}
-      onDrop={isSubmitting ? undefined : handleDrop}
+      onClick={isClickable ? handleClick : undefined}
+      onDragOver={isClickable ? handleDragOver : undefined}
+      onDragLeave={isClickable ? handleDragLeave : undefined}
+      onDrop={isClickable ? handleDrop : undefined}
     >
       {selectedFile ? (
         <>
@@ -173,6 +185,40 @@ export const FileUploadArea = ({ onFileSelect, selectedFile, onFileRemove, isSub
           >
             <X className="h-4 w-4" />
             Eliminar archivo
+          </button>
+        </>
+      ) : editingDocument ? (
+        <>
+          <div className="flex items-center gap-3">
+            {editingDocument.urlImagen ? (
+              <img
+                src={editingDocument.urlImagen}
+                alt={editingDocument.titulo}
+                className="w-16 h-16 object-cover rounded-md"
+              />
+            ) : (
+              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10">
+                <FileText className="h-6 w-6 text-primary" />
+              </div>
+            )}
+          </div>
+          <div className="text-center w-full min-w-0 px-2">
+            <p className="text-sm font-medium text-foreground mb-1 truncate" title={editingDocument.titulo}>
+              {editingDocument.titulo}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Archivo existente
+            </p>
+          </div>
+          
+          <button
+            type="button"
+            onClick={handleRemove}
+            disabled={isSubmitting}
+            className="mt-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 flex items-center gap-2 hover:bg-accent/50 rounded-md disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+          >
+            <X className="h-4 w-4" />
+            Reemplazar archivo
           </button>
         </>
       ) : (

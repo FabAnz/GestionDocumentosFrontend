@@ -4,9 +4,6 @@ import { FileText } from 'lucide-react'
 import { Spinner } from '../ui/spinner'
 import { DocumentItem } from './DocumentItem'
 
-/**
- * Componente DocumentList - Lista de documentos con estados de carga y vacío
- */
 export const DocumentList = () => {
     const { documents, loading } = useSelector((state) => state.documents)
 
@@ -37,7 +34,10 @@ export const DocumentList = () => {
     return (
         <div className="space-y-3 max-h-[600px] overflow-y-auto">
             {documents.map((document) => (
-                <DocumentItem key={document.id} document={document} />
+                <DocumentItem 
+                    key={document.id} 
+                    document={document}
+                />
             ))}
         </div>
     )

@@ -1,12 +1,12 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react'
-import { useDispatch } from 'react-redux'
+import React, { useEffect, useState, useRef } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import axios from 'axios'
 import { toast } from 'sonner'
 import { Folder, Plus } from 'lucide-react'
 import { Card } from '../ui/card'
 import { CardTitle } from '../atoms/CardTitle'
 import { FilterPill } from '../molecules/FilterPill'
-import { setDocuments, setLoading, setDocumentCount } from '../../redux/reducers/documentSlice'
+import { setDocuments, setLoading, setDocumentCount, clearEditingDocument } from '../../redux/reducers/documentSlice'
 import { DocumentList } from '../molecules/DocumentList'
 import { Button } from '../ui/button'
 import {
@@ -21,9 +21,12 @@ const apiUrl = import.meta.env.VITE_API_URL
 
 export const Documents = () => {
     const dispatch = useDispatch()
+    const editingDocument = useSelector(state => state.documents.editingDocument)
+    const isSubmitting = useSelector(state => state.documents.isSubmitting)
     const [activeFilter, setActiveFilter] = useState('Todo')
     const [isModalOpen, setIsModalOpen] = useState(false)
     const toastIdRef = useRef(null)
+    const isEditingRef = useRef(false)
 
     useEffect(() => {
         const fetchDocuments = async () => {
@@ -62,7 +65,20 @@ export const Documents = () => {
         fetchDocuments()
     }, [])
 
-    const handleSubmittingChange = useCallback((isSubmitting) => {
+    // Actualizar ref cuando cambia editingDocument
+    useEffect(() => {
+        isEditingRef.current = editingDocument !== null
+    }, [editingDocument])
+
+    // Abrir modal cuando hay un documento en edición
+    useEffect(() => {
+        if (editingDocument) {
+            setIsModalOpen(true)
+        }
+    }, [editingDocument])
+
+    // Escuchar cambios en isSubmitting desde Redux
+    useEffect(() => {
         if (isSubmitting) {
             // Evitar crear múltiples toasts
             if (toastIdRef.current !== null) {
@@ -72,9 +88,16 @@ export const Documents = () => {
             // Cerrar el modal
             setIsModalOpen(false)
             
+            // Usar la ref para determinar el modo
+            const isEditing = isEditingRef.current
+            const message = isEditing ? 'Guardando cambios...' : 'Subiendo archivo...'
+            const description = isEditing 
+                ? 'Por favor espera mientras se guardan los cambios' 
+                : 'Por favor espera mientras se procesa tu documento'
+            
             // Mostrar toast de carga (sonner tiene un spinner integrado)
-            toastIdRef.current = toast.loading('Subiendo archivo...', {
-                description: 'Por favor espera mientras se procesa tu documento',
+            toastIdRef.current = toast.loading(message, {
+                description: description,
                 duration: Infinity,
             })
         } else {
@@ -84,10 +107,18 @@ export const Documents = () => {
                 toastIdRef.current = null
             }
         }
-    }, [])
+    }, [isSubmitting])
 
     const handleAddDocument = () => {
+        dispatch(clearEditingDocument())
         setIsModalOpen(true)
+    }
+
+    const handleCloseModal = (open) => {
+        setIsModalOpen(open)
+        if (!open) {
+            dispatch(clearEditingDocument())
+        }
     }
 
     return (
@@ -96,7 +127,7 @@ export const Documents = () => {
                 <CardTitle icon={Folder}>Documentos</CardTitle>
                 <Button
                     icon={Plus}
-                    className="w-full sm:w-auto"
+                    className="w-auto"
                     onClick={handleAddDocument}
                 >
                     Agregar
@@ -130,13 +161,17 @@ export const Documents = () => {
                 <DocumentList />
             </div>
 
-            {/* Modal para agregar documento */}
-            <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+            {/* Modal para agregar/editar documento */}
+            <Dialog open={isModalOpen} onOpenChange={handleCloseModal}>
                 <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-lg">
                     <DialogHeader>
-                        <DialogTitle>Agregar Documento</DialogTitle>
+                        <DialogTitle>
+                            {editingDocument ? 'Editar Documento' : 'Agregar Documento'}
+                        </DialogTitle>
                     </DialogHeader>
-                    <AddDocumentForm onSubmittingChange={handleSubmittingChange} />
+                    <AddDocumentForm 
+                        editingDocument={editingDocument}
+                    />
                 </DialogContent>
             </Dialog>
         </Card>

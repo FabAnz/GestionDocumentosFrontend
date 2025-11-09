@@ -5,6 +5,7 @@ Esta carpeta contiene la documentación de los sub-agentes especializados que tr
 ## Estructura
 
 - **STYLE_AGENT.md**: Sub-agente especializado en estilos, diseño visual, aplicación del estilo Claymorphism y uso de componentes shadcn/ui.
+- **REDUX_AGENT.md**: Sub-agente especializado en Redux y gestión de estado global, optimización de estado y mejores prácticas de Redux Toolkit.
 
 ## Uso
 

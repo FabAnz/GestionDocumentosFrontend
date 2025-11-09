@@ -1,11 +1,16 @@
 import React from 'react'
+import { useDispatch } from 'react-redux'
 import { FileText, Image, Calendar, Pencil, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { IconButton } from '@/components/atoms/IconButton'
+import { setEditingDocument } from '../../redux/reducers/documentSlice'
 
 
 export const DocumentItem = ({ document }) => {
+    const dispatch = useDispatch()
+    
     // Formatear fecha
+    //todo: PASAR A UTILITIES
     const formatDate = (dateString) => {
         if (!dateString) return ''
         const date = new Date(dateString)
@@ -16,9 +21,8 @@ export const DocumentItem = ({ document }) => {
         })
     }
 
-    // TODO: Implementar función de edición
     const handleEdit = () => {
-        console.log('Editar documento:', document.id)
+        dispatch(setEditingDocument(document))
     }
 
     // TODO: Implementar función de eliminación
