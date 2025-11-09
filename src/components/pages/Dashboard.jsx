@@ -8,7 +8,6 @@ import { FloatingActionButton } from '../ui/floating-action-button'
 import { UserPlan } from '../organisms/UserPlan'
 import { Documents } from '../organisms/Documents'
 import { QueryChart } from '../organisms/QueryChart'
-import { AddDocument } from '../organisms/AddDocument'
 import { Chat } from '../organisms/Chat'
 import { Spinner } from '../ui/spinner'
 import { Toaster } from '../ui/sonner'
@@ -105,7 +104,6 @@ export const Dashboard = () => {
                     </div>
                     {/* Segunda columna: 5 columnas */}
                     <div className="col-span-12 md:col-span-6 lg:col-span-6 xl:col-span-5 flex flex-col gap-6">
-                        <AddDocument />
                         <Documents />
                     </div>
                     {/* Tercera columna: 3 columnas */}

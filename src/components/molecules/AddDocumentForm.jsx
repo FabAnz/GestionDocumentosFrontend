@@ -144,7 +144,7 @@ export const AddDocumentForm = ({ onSubmittingChange }) => {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="w-full h-full space-y-6 bg-card p-6">
+    <form onSubmit={handleSubmit} className="w-full h-full space-y-6 bg-card p-6 rounded-lg">
       {/* Área de carga de archivos */}
       <FileUploadArea
         onFileSelect={handleFileSelect}

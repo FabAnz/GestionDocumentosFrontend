@@ -2,18 +2,27 @@ import React, { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import axios from 'axios'
 import { toast } from 'sonner'
-import { Folder } from 'lucide-react'
+import { Folder, Plus } from 'lucide-react'
 import { Card } from '../ui/card'
 import { CardTitle } from '../atoms/CardTitle'
 import { FilterPill } from '../molecules/FilterPill'
 import { setDocuments, setLoading, setDocumentCount } from '../../redux/reducers/documentSlice'
 import { DocumentList } from '../molecules/DocumentList'
+import { Button } from '../ui/button'
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from '../ui/dialog'
+import { AddDocumentForm } from '../molecules/AddDocumentForm'
 
 const apiUrl = import.meta.env.VITE_API_URL
 
 export const Documents = () => {
     const dispatch = useDispatch()
     const [activeFilter, setActiveFilter] = useState('Todo')
+    const [isModalOpen, setIsModalOpen] = useState(false)
 
     useEffect(() => {
         const fetchDocuments = async () => {
@@ -38,7 +47,7 @@ export const Documents = () => {
                     dispatch(setLoading(false))
                     return
                 }
-                
+
                 // Solo mostrar error si no es un 404
                 const errorMessage = error.response?.data?.message || error.message || 'Error al cargar los documentos'
                 toast.error('Error al cargar documentos', {
@@ -52,25 +61,38 @@ export const Documents = () => {
         fetchDocuments()
     }, [])
 
+    const handleAddDocument = () => {
+        setIsModalOpen(true)
+    }
+
     return (
         <Card>
-            <CardTitle icon={Folder}>Documentos</CardTitle>
+            <div className="flex flex-row justify-between items-center mb-6">
+                <CardTitle icon={Folder}>Documentos</CardTitle>
+                <Button
+                    icon={Plus}
+                    className="w-full sm:w-auto"
+                    onClick={handleAddDocument}
+                >
+                    Agregar
+                </Button>
+            </div>
 
             {/* Filtros */}
             <div className="flex gap-2 mt-4">
-                <FilterPill 
+                <FilterPill
                     active={activeFilter === 'Todo'}
                     onClick={() => setActiveFilter('Todo')}
                 >
                     Todo
                 </FilterPill>
-                <FilterPill 
+                <FilterPill
                     active={activeFilter === 'Ultima Semana'}
                     onClick={() => setActiveFilter('Ultima Semana')}
                 >
                     Ultima Semana
                 </FilterPill>
-                <FilterPill 
+                <FilterPill
                     active={activeFilter === 'Ultimo Mes'}
                     onClick={() => setActiveFilter('Ultimo Mes')}
                 >
@@ -82,6 +104,16 @@ export const Documents = () => {
             <div className="mt-4">
                 <DocumentList />
             </div>
+
+            {/* Modal para agregar documento */}
+            <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-lg">
+                    <DialogHeader>
+                        <DialogTitle>Agregar Documento</DialogTitle>
+                    </DialogHeader>
+                    <AddDocumentForm />
+                </DialogContent>
+            </Dialog>
         </Card>
     )
 }
