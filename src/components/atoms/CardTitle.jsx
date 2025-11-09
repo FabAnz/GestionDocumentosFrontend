@@ -10,12 +10,14 @@ import { cn } from '@/lib/utils'
  * @param {React.ReactNode} props.children - Texto del título
  * @param {string} props.className - Clases CSS adicionales
  * @param {string} props.size - Tamaño del título: 'sm', 'md', 'lg', 'xl' (default: 'md')
+ * @param {string} props.iconClassName - Clases CSS adicionales para el icono
  */
 export const CardTitle = ({ 
     icon: Icon, 
     children, 
     className,
-    size = 'md'
+    size = 'md',
+    iconClassName
 }) => {
     const sizeClasses = {
         sm: 'text-lg',
@@ -40,7 +42,8 @@ export const CardTitle = ({
                 <Icon 
                     className={cn(
                         'text-primary',
-                        iconSizeClasses[size]
+                        iconSizeClasses[size],
+                        iconClassName
                     )} 
                 />
             )}

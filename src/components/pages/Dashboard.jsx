@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Navbar } from '../organisms/Navbar'
 import axios from 'axios'
 import { useDispatch, useSelector } from 'react-redux'
@@ -12,6 +12,11 @@ import { Chat } from '../organisms/Chat'
 import { Spinner } from '../ui/spinner'
 import { Toaster } from '../ui/sonner'
 import { toast } from 'sonner'
+import { X } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { ChatContainer } from '../molecules/ChatContainer'
+import { CardTitle } from '../atoms/CardTitle'
+import { MessageSquare } from 'lucide-react'
 
 
 const apiUrl = import.meta.env.VITE_API_URL
@@ -19,6 +24,7 @@ const apiUrl = import.meta.env.VITE_API_URL
 export const Dashboard = () => {
     const dispatch = useDispatch()
     const loading = useSelector((state) => state.user.loading)
+    const [isChatOpen, setIsChatOpen] = useState(false)
 
     useEffect(() => {
         // TODO: Pasar esto a login component
@@ -69,7 +75,7 @@ export const Dashboard = () => {
                     dispatch(setCategoriesLoading(false))
                     return
                 }
-                
+
                 // Solo mostrar error si no es un 404
                 const errorMessage = error.response?.data?.message || error.message || 'Error al cargar las categorías'
                 toast.error('Error al cargar categorías', {
@@ -112,7 +118,49 @@ export const Dashboard = () => {
                     </div>
                 </div>
             </div>
-            <FloatingActionButton />
+
+            {/* Botón flotante para abrir chat en pantallas menores a xl */}
+            <FloatingActionButton onClick={() => setIsChatOpen(true)} />
+
+            {/* Overlay y drawer del chat para pantallas menores a xl */}
+            {isChatOpen && (
+                <>
+                    {/* Overlay oscuro */}
+                    <div
+                        className="fixed inset-0 z-40 bg-black/80 xl:hidden"
+                        onClick={() => setIsChatOpen(false)}
+                    />
+
+                    {/* Drawer del chat */}
+                    <div className={cn(
+                        "fixed right-0 top-0 z-50 h-full w-full max-w-md",
+                        "bg-background shadow-lg",
+                        "xl:hidden",
+                        "transform transition-transform duration-300 ease-in-out",
+                        isChatOpen ? "translate-x-0" : "translate-x-full"
+                    )}>
+                        <div className="flex h-full flex-col">
+                            {/* Header del drawer */}
+                            <div className="flex items-center justify-between border-b p-4">
+                                <CardTitle icon={MessageSquare}>Chat de Prueba</CardTitle>
+                                <button
+                                    onClick={() => setIsChatOpen(false)}
+                                    className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                >
+                                    <X className="h-5 w-5" />
+                                    <span className="sr-only">Cerrar</span>
+                                </button>
+                            </div>
+
+                            {/* Contenido del chat */}
+                            <div className="flex-1 overflow-hidden flex flex-col">
+                                <ChatContainer />
+                            </div>
+                        </div>
+                    </div>
+                </>
+            )}
+
             <Toaster />
         </div>
     )

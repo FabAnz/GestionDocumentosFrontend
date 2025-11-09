@@ -58,7 +58,7 @@ export const documentSlice = createSlice({
         }
     }
 })
-
+//TODO: Revisar el limite de documentos cuando este la bd limpia
 export const {
     setDocuments,
     setDocumentCount,
