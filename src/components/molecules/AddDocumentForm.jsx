@@ -46,11 +46,11 @@ export const AddDocumentForm = ({ onSubmittingChange }) => {
 
   const checkPlanLimit = () => {
     if (!user?.plan) return true
-    
+
     const limit = user.plan.cantidadMaximaDocumentos
     // Si el límite es -1, es ilimitado
     if (limit === -1) return true
-    
+
     // Verificar si se alcanzó el límite
     if (documentCount >= limit) {
       toast.error('Límite de documentos alcanzado', {
@@ -59,7 +59,7 @@ export const AddDocumentForm = ({ onSubmittingChange }) => {
       })
       return false
     }
-    
+
     return true
   }
 
@@ -110,7 +110,7 @@ export const AddDocumentForm = ({ onSubmittingChange }) => {
       setSelectedFile(null)
       setTitle('')
       setCategory('')
-      
+
       // Limpiar el input de archivo si existe referencia
       const fileInput = document.querySelector('input[type="file"]')
       if (fileInput) {
@@ -120,11 +120,11 @@ export const AddDocumentForm = ({ onSubmittingChange }) => {
     } catch (error) {
       // Manejo de errores usando mensajes del backend
       let errorMessage = 'Error al subir el archivo'
-      
+
       if (error.response?.data?.message) {
         // Usar el mensaje del backend directamente
         errorMessage = error.response.data.message
-        
+
         // Si hay errores adicionales (array de errores), agregarlos
         if (error.response.data.errors && Array.isArray(error.response.data.errors)) {
           const errorsList = error.response.data.errors.join(', ')
@@ -146,8 +146,8 @@ export const AddDocumentForm = ({ onSubmittingChange }) => {
   return (
     <form onSubmit={handleSubmit} className="w-full h-full space-y-6 bg-card p-6">
       {/* Área de carga de archivos */}
-      <FileUploadArea 
-        onFileSelect={handleFileSelect} 
+      <FileUploadArea
+        onFileSelect={handleFileSelect}
         selectedFile={selectedFile}
         onFileRemove={handleFileRemove}
         isSubmitting={isSubmitting}
@@ -169,8 +169,8 @@ export const AddDocumentForm = ({ onSubmittingChange }) => {
       {/* Campo de categoría */}
       <div className="space-y-2">
         <Label htmlFor="category">Categoría</Label>
-        <Select 
-          value={category} 
+        <Select
+          value={category}
           onValueChange={setCategory}
           disabled={isSubmitting}
         >
@@ -188,9 +188,9 @@ export const AddDocumentForm = ({ onSubmittingChange }) => {
       </div>
 
       {/* Botón de agregar */}
-      <Button 
-        type="submit" 
-        className="w-full rounded-md !rounded-md shadow-sm" 
+      <Button
+        type="submit"
+        className="w-full rounded-md !rounded-md shadow-sm"
         variant={isFormValid ? "default" : "secondary"}
         disabled={!isFormValid || isSubmitting}
       >
