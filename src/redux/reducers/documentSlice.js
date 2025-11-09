@@ -44,6 +44,13 @@ export const documentSlice = createSlice({
         },
         setSubmitting: (state, action) => {
             state.isSubmitting = action.payload
+        },
+        deleteDocument: (state, action) => {
+            const documentId = action.payload
+            state.documents = state.documents.filter(
+                doc => (doc.id !== documentId) && (doc._id !== documentId)
+            )
+            state.documentCount = state.documents.length
         }
     }
 })
@@ -56,7 +63,8 @@ export const {
     updateDocument,
     setEditingDocument,
     clearEditingDocument,
-    setSubmitting
+    setSubmitting,
+    deleteDocument
 } = documentSlice.actions
 export default documentSlice.reducer
 

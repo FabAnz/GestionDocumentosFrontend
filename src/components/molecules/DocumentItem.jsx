@@ -1,13 +1,29 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { FileText, Image, Calendar, Pencil, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { IconButton } from '@/components/atoms/IconButton'
-import { setEditingDocument } from '../../redux/reducers/documentSlice'
+import { setEditingDocument, deleteDocument } from '../../redux/reducers/documentSlice'
+import axios from 'axios'
+import { toast } from 'sonner'
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+} from '../ui/dialog'
+import { Button } from '../ui/button'
+import { Spinner } from '../ui/spinner'
+
+const apiUrl = import.meta.env.VITE_API_URL
 
 
 export const DocumentItem = ({ document }) => {
     const dispatch = useDispatch()
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+    const [isDeleting, setIsDeleting] = useState(false)
     
     // Formatear fecha
     //todo: PASAR A UTILITIES
@@ -25,9 +41,61 @@ export const DocumentItem = ({ document }) => {
         dispatch(setEditingDocument(document))
     }
 
-    // TODO: Implementar función de eliminación
     const handleDelete = () => {
-        console.log('Eliminar documento:', document.id)
+        setIsDeleteDialogOpen(true)
+    }
+
+    const confirmDelete = async () => {
+        setIsDeleting(true)
+        try {
+            const token = localStorage.getItem('token')
+            if (!token) {
+                throw new Error('No hay token de autenticación')
+            }
+
+            const documentId = document.id || document._id
+            await axios.delete(
+                `${apiUrl}/documentos/${documentId}`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+            )
+
+            // Cerrar el diálogo
+            setIsDeleteDialogOpen(false)
+
+            // Eliminar documento del estado de Redux
+            dispatch(deleteDocument(documentId))
+
+            // Mostrar notificación de éxito
+            toast.success('Documento eliminado exitosamente', {
+                description: `"${document.titulo}" ha sido eliminado correctamente.`,
+                duration: 5000,
+            })
+        } catch (error) {
+            // Manejo de errores
+            let errorMessage = 'Error al eliminar el documento'
+
+            if (error.response?.data?.message) {
+                errorMessage = error.response.data.message
+
+                if (error.response.data.errors && Array.isArray(error.response.data.errors)) {
+                    const errorsList = error.response.data.errors.join(', ')
+                    errorMessage = `${errorMessage}: ${errorsList}`
+                }
+            } else if (error.message) {
+                errorMessage = error.message
+            }
+
+            toast.error('Error al eliminar documento', {
+                description: errorMessage,
+                duration: 5000,
+            })
+        } finally {
+            setIsDeleting(false)
+        }
     }
 
     return (
@@ -108,6 +176,44 @@ export const DocumentItem = ({ document }) => {
                     />
                 </div>
             </div>
+
+            {/* Diálogo de confirmación de eliminación */}
+            <Dialog open={isDeleteDialogOpen} onOpenChange={(open) => !isDeleting && setIsDeleteDialogOpen(open)}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle className="mb-2">Eliminar documento</DialogTitle>
+                        <DialogDescription>
+                            ¿Estás seguro de que deseas eliminar el documento "{document.titulo}"?
+                            <br />
+                            <br />
+                            Esta acción no se puede deshacer.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setIsDeleteDialogOpen(false)}
+                            disabled={isDeleting}
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            onClick={confirmDelete}
+                            disabled={isDeleting}
+                        >
+                            {isDeleting ? (
+                                <span className="flex items-center gap-2">
+                                    <Spinner className="h-4 w-4" />
+                                    Eliminando...
+                                </span>
+                            ) : (
+                                'Eliminar'
+                            )}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }
