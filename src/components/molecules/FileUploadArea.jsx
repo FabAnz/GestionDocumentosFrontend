@@ -118,7 +118,7 @@ export const FileUploadArea = ({ onFileSelect, selectedFile, onFileRemove, isSub
   return (
     <div
       className={cn(
-        "w-full rounded-md border-2 border-dashed p-8",
+        "w-full min-w-0 rounded-md border-2 border-dashed p-8",
         "flex flex-col items-center justify-center gap-4",
         "transition-all duration-200",
         selectedFile 
@@ -146,8 +146,8 @@ export const FileUploadArea = ({ onFileSelect, selectedFile, onFileRemove, isSub
               </div>
             )}
           </div>
-          <div className="text-center w-full px-2">
-            <p className="text-sm font-medium text-foreground mb-1 break-words overflow-hidden line-clamp-2">
+          <div className="text-center w-full min-w-0 px-2">
+            <p className="text-sm font-medium text-foreground mb-1 truncate" title={selectedFile.name}>
               {selectedFile.name}
             </p>
             <p className="text-xs text-muted-foreground">
@@ -157,9 +157,9 @@ export const FileUploadArea = ({ onFileSelect, selectedFile, onFileRemove, isSub
           
           {/* Advertencia para archivos PDF */}
           {isPdfFile(selectedFile) && (
-            <div className="w-full px-4 py-3 rounded-md bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 flex items-start gap-3">
+            <div className="w-full min-w-0 px-4 py-3 rounded-md bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 flex items-start gap-3">
               <AlertTriangle className="h-5 w-5 text-yellow-600 dark:text-yellow-500 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-yellow-800 dark:text-yellow-200 text-left">
+              <p className="text-sm text-yellow-800 dark:text-yellow-200 text-left min-w-0 break-words">
                 <span className="font-semibold">Advertencia:</span> Solo se extraerá el texto del PDF. Las imágenes no serán procesadas.
               </p>
             </div>

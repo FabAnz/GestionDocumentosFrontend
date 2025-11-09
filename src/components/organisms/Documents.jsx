@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef, useCallback } from 'react'
 import { useDispatch } from 'react-redux'
 import axios from 'axios'
 import { toast } from 'sonner'
@@ -23,6 +23,7 @@ export const Documents = () => {
     const dispatch = useDispatch()
     const [activeFilter, setActiveFilter] = useState('Todo')
     const [isModalOpen, setIsModalOpen] = useState(false)
+    const toastIdRef = useRef(null)
 
     useEffect(() => {
         const fetchDocuments = async () => {
@@ -59,6 +60,30 @@ export const Documents = () => {
         }
 
         fetchDocuments()
+    }, [])
+
+    const handleSubmittingChange = useCallback((isSubmitting) => {
+        if (isSubmitting) {
+            // Evitar crear múltiples toasts
+            if (toastIdRef.current !== null) {
+                return
+            }
+            
+            // Cerrar el modal
+            setIsModalOpen(false)
+            
+            // Mostrar toast de carga (sonner tiene un spinner integrado)
+            toastIdRef.current = toast.loading('Subiendo archivo...', {
+                description: 'Por favor espera mientras se procesa tu documento',
+                duration: Infinity,
+            })
+        } else {
+            // Cerrar el toast cuando termine la carga
+            if (toastIdRef.current !== null) {
+                toast.dismiss(toastIdRef.current)
+                toastIdRef.current = null
+            }
+        }
     }, [])
 
     const handleAddDocument = () => {
@@ -111,7 +136,7 @@ export const Documents = () => {
                     <DialogHeader>
                         <DialogTitle>Agregar Documento</DialogTitle>
                     </DialogHeader>
-                    <AddDocumentForm />
+                    <AddDocumentForm onSubmittingChange={handleSubmittingChange} />
                 </DialogContent>
             </Dialog>
         </Card>
