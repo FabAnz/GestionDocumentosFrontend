@@ -7,6 +7,7 @@ import { ChatInput } from './ChatInput'
 import { TypingIndicator } from './TypingIndicator'
 import { useDispatch, useSelector } from 'react-redux'
 import { addMessage, setMessages, setLoading } from '../../redux/reducers/chatSlice'
+import { addCategoryMessage } from '../../redux/reducers/categoryMessagesSlice'
 import axios from 'axios'
 import { toast } from 'sonner'
 import { Spinner } from '../ui/spinner'
@@ -118,7 +119,6 @@ export const ChatContainer = () => {
                     }
                 }
             )
-
             // Transformar respuesta de la IA al formato del slice
             const assistantMessage = {
                 id: response.data.mensajeIA._id,
@@ -129,6 +129,14 @@ export const ChatContainer = () => {
 
             // Agregar mensaje de la IA al estado
             dispatch(addMessage(assistantMessage))
+
+            console.log(response.data)
+
+            //Agregar dato al grafico de temas mas consultados
+            const categoriaMensaje = response.data.categoriaMensaje
+            if (categoriaMensaje) {
+                dispatch(addCategoryMessage(categoriaMensaje))
+            }
             setLoadingResponse(false)
         } catch (error) {
             const errorMessage = error.response?.data?.message || error.message || 'Error al enviar el mensaje'
