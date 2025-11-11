@@ -81,7 +81,7 @@ export const ChatContainer = () => {
 
         fetchMessages()
     }, [dispatch])
-
+    //TODO: Cargar imagenes en las respuestas de la IA
     const handleSendMessage = async (message) => {
         const token = localStorage.getItem('token')
         if (!token) {
@@ -121,10 +121,10 @@ export const ChatContainer = () => {
 
             // Transformar respuesta de la IA al formato del slice
             const assistantMessage = {
-                id: response.data._id,
-                text: response.data.contenido,
+                id: response.data.mensajeIA._id,
+                text: response.data.mensajeIA.contenido,
                 sender: 'assistant',
-                timestamp: response.data.createdAt
+                timestamp: response.data.mensajeIA.createdAt
             }
 
             // Agregar mensaje de la IA al estado
@@ -141,10 +141,10 @@ export const ChatContainer = () => {
     }
 
     return (
-        <div className="flex flex-col h-full">
-            <CardTitle icon={MessageSquare} className="hidden xl:flex mb-4 px-4 pt-4">Chat de Prueba</CardTitle>
+        <div className="flex flex-col h-full min-h-0">
+            <CardTitle icon={MessageSquare} className="hidden xl:flex mb-4 px-4 pt-4 flex-shrink-0">Chat de Prueba</CardTitle>
             {/* Área de mensajes con scroll */}
-            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+            <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-4">
                 {loading ? (
                     <div className="flex items-center justify-center h-full">
                         <Spinner className="h-8 w-8 text-primary" />
@@ -154,18 +154,18 @@ export const ChatContainer = () => {
                         {messages.map((message) => {
                             if (message.sender === 'user') {
                                 return (
-                                    <UserMessage 
-                                        key={message.id} 
-                                        text={message.text} 
-                                        timestamp={message.timestamp} 
+                                    <UserMessage
+                                        key={message.id}
+                                        text={message.text}
+                                        timestamp={message.timestamp}
                                     />
                                 )
                             } else {
                                 return (
-                                    <AssistantMessage 
-                                        key={message.id} 
-                                        text={message.text} 
-                                        timestamp={message.timestamp} 
+                                    <AssistantMessage
+                                        key={message.id}
+                                        text={message.text}
+                                        timestamp={message.timestamp}
                                     />
                                 )
                             }
@@ -176,7 +176,7 @@ export const ChatContainer = () => {
                 )}
             </div>
             {/* Input fijo en la parte inferior */}
-            <div className="px-4 pb-4 pt-2 bg-background xl:p-0 xl:bg-transparent">
+            <div className="px-4 pb-4 pt-2 bg-background xl:p-0 xl:bg-transparent flex-shrink-0">
                 <ChatInput onSend={handleSendMessage} placeholder="Escribe tu pregunta..." />
             </div>
         </div>
