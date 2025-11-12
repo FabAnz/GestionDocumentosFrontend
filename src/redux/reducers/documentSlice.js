@@ -14,7 +14,11 @@ export const documentSlice = createSlice({
     initialState,
     reducers: {
         setDocuments: (state, action) => {
-            state.documents = action.payload
+            state.documents = [...action.payload].sort((a, b) => {
+                const dateA = new Date(a.updatedAt || 0)
+                const dateB = new Date(b.updatedAt || 0)
+                return dateB - dateA // descendente (más reciente primero)
+            })
             state.loading = false
         },
         setDocumentCount: (state, action) => {

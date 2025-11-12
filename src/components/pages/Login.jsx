@@ -20,6 +20,8 @@ export const Login = () => {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
 
+    const emptyFields = email === '' || password === ''
+
     useEffect(() => {
         const token = localStorage.getItem('token')
         if (token) {
@@ -55,7 +57,7 @@ export const Login = () => {
                 errors.forEach((errorMsg) => {
                     toast.error('Error al iniciar sesión', {
                         description: errorMsg,
-                        duration: 5000,
+                        duration: 10000,
                     })
                 })
             } 
@@ -63,14 +65,14 @@ export const Login = () => {
             if (message) {
                 toast.error('Error al iniciar sesión', {
                     description: message,
-                    duration: 5000,
+                    duration: 10000,
                 })
             } 
             // Si no hay ningún error específico, usar mensaje por defecto
             else {
                 toast.error('Error al iniciar sesión', {
                     description: error.message || 'Error al iniciar sesión',
-                    duration: 5000,
+                    duration: 10000,
                 })
             }
             
@@ -123,7 +125,7 @@ export const Login = () => {
 
                         <Button
                             type="submit"
-                            disabled={loading}
+                            disabled={loading || emptyFields}
                             className="w-full"
                         >
                             {loading ? (

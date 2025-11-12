@@ -21,8 +21,7 @@ export const UserPlan = () => {
 
   const handleUpgrade = async () => {
     try {
-      const response = await api.put('/usuarios/upgrade-plan', null)
-      console.log(response.data.plan)
+      const response = await api.put('/usuarios/upgrade-plan')
       dispatch(upgradeToPremium(response.data.plan))
     } catch (error) {
       const errorMessage = error.response?.data?.message || error.message || 'Error al actualizar el plan'

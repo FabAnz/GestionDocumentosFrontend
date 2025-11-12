@@ -25,6 +25,7 @@ export const Register = () => {
 
     // Validar que las contraseñas coincidan
     const passwordsMatch = password === repeatPassword && password !== ''
+    const emptyFields = email === '' || password === '' || repeatPassword === '' || nombre === '' || apellido === ''
 
     useEffect(() => {
         const token = localStorage.getItem('token')
@@ -35,7 +36,7 @@ export const Register = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        
+
         // Validar que las contraseñas coincidan antes de enviar
         if (password !== repeatPassword) {
             toast.error('Error de validación', {
@@ -67,7 +68,7 @@ export const Register = () => {
         } catch (error) {
             const errors = error.response?.data?.errors
             const message = error.response?.data?.message
-            
+
             // Si viene un array de errores, mostrar cada uno
             if (Array.isArray(errors) && errors.length > 0) {
                 errors.forEach((errorMsg) => {
@@ -76,14 +77,14 @@ export const Register = () => {
                         duration: 5000,
                     })
                 })
-            } 
+            }
             // Si viene un mensaje de error (string), mostrarlo
             else if (message) {
                 toast.error('Error al registrarse', {
                     description: message,
                     duration: 5000,
                 })
-            } 
+            }
             // Si no hay ningún error específico, usar mensaje por defecto
             else {
                 toast.error('Error al registrarse', {
@@ -91,7 +92,7 @@ export const Register = () => {
                     duration: 5000,
                 })
             }
-            
+
             dispatch(setUserLoading(false))
             setLoading(false)
         }
@@ -156,7 +157,7 @@ export const Register = () => {
                         </div>
 
                         <div className="space-y-2">
-                                                        <Input
+                            <Input
                                 id="repeatPassword"
                                 type="password"
                                 value={repeatPassword}
@@ -173,7 +174,7 @@ export const Register = () => {
 
                         <Button
                             type="submit"
-                            disabled={loading || !passwordsMatch}
+                            disabled={loading || !passwordsMatch || emptyFields}
                             className="w-full"
                         >
                             {loading ? (
