@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Formik, Field } from 'formik'
+import { useTranslation } from 'react-i18next'
 import { publicApi } from '../../services/api'
 import { useDispatch } from 'react-redux'
 import { setUser, setLoading as setUserLoading } from '../../redux/reducers/userSlice'
@@ -8,19 +10,25 @@ import { LogIn } from 'lucide-react'
 import { Card } from '../ui/card'
 import { CardTitle } from '../atoms/CardTitle'
 import { Input } from '../ui/input'
-import { Label } from '../ui/label'
 import { Button } from '../ui/button'
 import { Spinner } from '../ui/spinner'
 import { Toaster } from '../ui/sonner'
+import { LanguageSwitcher } from '../molecules/LanguageSwitcher'
+import { getLoginSchema } from '../../schemas/loginSchemas'
+
+const initialValues = { email: '', password: '' }
+const isSubmitDisabled = (values, isSubmitting, errors) => {
+    return isSubmitting || !values.email || !values.password || errors.email || errors.password
+}
 
 export const Login = () => {
     const navigate = useNavigate()
     const dispatch = useDispatch()
-    const [loading, setLoading] = useState(false)
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
+    const { t, i18n } = useTranslation()
 
-    const emptyFields = email === '' || password === ''
+    const validationSchema = useMemo(() => {
+        return getLoginSchema(t)
+    }, [i18n.language, t])
 
     useEffect(() => {
         const token = localStorage.getItem('token')
@@ -29,15 +37,12 @@ export const Login = () => {
         }
     }, [navigate])
 
-    const handleSubmit = async (e) => {
-        e.preventDefault()
-        setLoading(true)
-
+    const onSubmit = async (values, actions) => {
         try {
             dispatch(setUserLoading(true))
             const response = await publicApi.post('/usuarios/login', {
-                email: email,
-                password: password
+                email: values.email,
+                password: values.password
             })
 
             localStorage.setItem('token', response.data.token)
@@ -48,6 +53,9 @@ export const Login = () => {
 
             // Redirigir al dashboard después del login exitoso
             navigate('/dashboard', { replace: true })
+            
+            // Resetear formulario después del envío exitoso
+            actions.resetForm()
         } catch (error) {
             const errors = error.response?.data?.errors
             const message = error.response?.data?.message
@@ -55,7 +63,7 @@ export const Login = () => {
             // Si viene un array de errores, mostrar cada uno
             if (Array.isArray(errors) && errors.length > 0) {
                 errors.forEach((errorMsg) => {
-                    toast.error('Error al iniciar sesión', {
+                    toast.error(t('auth.login.error'), {
                         description: errorMsg,
                         duration: 10000,
                     })
@@ -63,21 +71,22 @@ export const Login = () => {
             } 
             // Si viene un mensaje de error (string), mostrarlo
             if (message) {
-                toast.error('Error al iniciar sesión', {
+                toast.error(t('auth.login.error'), {
                     description: message,
                     duration: 10000,
                 })
             } 
             // Si no hay ningún error específico, usar mensaje por defecto
             else {
-                toast.error('Error al iniciar sesión', {
-                    description: error.message || 'Error al iniciar sesión',
+                toast.error(t('auth.login.error'), {
+                    description: error.message || t('auth.login.error'),
                     duration: 10000,
                 })
             }
             
             dispatch(setUserLoading(false))
-            setLoading(false)
+        } finally {
+            actions.setSubmitting(false)
         }
     }
 
@@ -85,72 +94,89 @@ export const Login = () => {
         <div className="w-full h-screen bg-background flex items-center justify-center px-4">
             <Card className="w-full max-w-md shadow-md">
                 <div className="space-y-6">
+                    <div className="flex justify-end">
+                        <LanguageSwitcher />
+                    </div>
                     <div className="text-center space-y-2">
                         <CardTitle icon={LogIn} size="lg" className="justify-center">
-                            Iniciar Sesión
+                            {t('auth.login.title')}
                         </CardTitle>
                         <p className="text-muted-foreground text-sm">
-                            Ingresa tus credenciales para acceder
+                            {t('auth.login.subtitle')}
                         </p>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="email">
-                                Email
-                            </Label>
-                            <Input
-                                id="email"
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                placeholder="tu@email.com"
-                                required
-                            />
-                        </div>
+                    <Formik
+                        initialValues={initialValues}
+                        validationSchema={validationSchema}
+                        onSubmit={onSubmit}
+                    >
+                        {({ values, errors, touched, handleSubmit, handleChange, isSubmitting }) => (
+                            <form onSubmit={handleSubmit}>
+                                <div className="space-y-4">
+                                    <div className="space-y-2">
+                                        <Field
+                                            as={Input}
+                                            id="email"
+                                            name="email"
+                                            type="text"
+                                            value={values.email}
+                                            onChange={handleChange}
+                                            placeholder={t('auth.login.emailPlaceholder')}
+                                        />
+                                        {errors.email && touched.email && (
+                                            <p className="text-sm text-destructive">{errors.email}</p>
+                                        )}
+                                    </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="password">
-                                Contraseña
-                            </Label>
-                            <Input
-                                id="password"
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                placeholder="••••••••"
-                                required
-                            />
-                        </div>
+                                    <div className="space-y-2">
+                                        <Field
+                                            as={Input}
+                                            id="password"
+                                            name="password"
+                                            type="password"
+                                            value={values.password}
+                                            onChange={handleChange}
+                                            placeholder={t('auth.login.passwordPlaceholder')}
+                                        />
+                                        {errors.password && touched.password && (
+                                            <p className="text-sm text-destructive">{errors.password}</p>
+                                        )}
+                                    </div>
+                                </div>
 
-                        <Button
-                            type="submit"
-                            disabled={loading || emptyFields}
-                            className="w-full"
-                        >
-                            {loading ? (
-                                <>
-                                    <Spinner className="h-4 w-4" />
-                                    <span>Iniciando sesión...</span>
-                                </>
-                            ) : (
-                                <>
-                                    <LogIn className="w-4 h-4" />
-                                    <span>Iniciar Sesión</span>
-                                </>
-                            )}
-                        </Button>
-                    </form>
+                                <div className="mt-10">
+                                    <Button
+                                        type="submit"
+                                        disabled={isSubmitDisabled(values, isSubmitting, errors)}
+                                        className="w-full"
+                                    >
+                                        {isSubmitting ? (
+                                            <>
+                                                <Spinner className="h-4 w-4" />
+                                                <span>{t('auth.login.buttonLoading')}</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <LogIn className="w-4 h-4" />
+                                                <span>{t('auth.login.button')}</span>
+                                            </>
+                                        )}
+                                    </Button>
+                                </div>
+                            </form>
+                        )}
+                    </Formik>
 
                     <div className="text-center">
                         <p className="text-sm text-muted-foreground">
-                            ¿No tienes una cuenta?{' '}
+                            {t('auth.login.noAccount')}{' '}
                             <button
                                 type="button"
                                 onClick={() => navigate('/registro')}
                                 className="text-primary hover:underline font-medium"
                             >
-                                Regístrate
+                                {t('auth.login.registerLink')}
                             </button>
                         </p>
                     </div>

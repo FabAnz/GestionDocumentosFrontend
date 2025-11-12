@@ -28,7 +28,11 @@ export const documentSlice = createSlice({
             state.loading = action.payload
         },
         addDocument: (state, action) => {
-            state.documents.push(action.payload)
+            state.documents = [...state.documents, action.payload].sort((a, b) => {
+                const dateA = new Date(a.updatedAt || 0)
+                const dateB = new Date(b.updatedAt || 0)
+                return dateB - dateA // descendente (más reciente primero)
+            })
             state.documentCount = state.documents.length
         },
         updateDocument: (state, action) => {

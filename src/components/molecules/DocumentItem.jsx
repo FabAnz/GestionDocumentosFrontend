@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useDispatch } from 'react-redux'
 import { FileText, Image, Calendar, Pencil, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -20,6 +21,7 @@ import { Spinner } from '../ui/spinner'
 
 export const DocumentItem = ({ document }) => {
     const dispatch = useDispatch()
+    const { t } = useTranslation()
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
     const [isDeleting, setIsDeleting] = useState(false)
     
@@ -56,13 +58,13 @@ export const DocumentItem = ({ document }) => {
             dispatch(deleteDocument(documentId))
 
             // Mostrar notificación de éxito
-            toast.success('Documento eliminado exitosamente', {
-                description: `"${document.titulo}" ha sido eliminado correctamente.`,
+            toast.success(t('documents.success.deleted'), {
+                description: t('documents.success.deletedDesc', { title: document.titulo }),
                 duration: 5000,
             })
         } catch (error) {
             // Manejo de errores
-            let errorMessage = 'Error al eliminar el documento'
+            let errorMessage = t('documents.errors.delete')
 
             if (error.response?.data?.message) {
                 errorMessage = error.response.data.message
@@ -75,7 +77,7 @@ export const DocumentItem = ({ document }) => {
                 errorMessage = error.message
             }
 
-            toast.error('Error al eliminar documento', {
+            toast.error(t('documents.errors.delete'), {
                 description: errorMessage,
                 duration: 5000,
             })
@@ -151,14 +153,14 @@ export const DocumentItem = ({ document }) => {
                         onClick={handleEdit}
                         variant="default"
                         size="sm"
-                        aria-label="Editar documento"
+                        aria-label={t('common.edit')}
                     />
                     <IconButton
                         icon={Trash2}
                         onClick={handleDelete}
                         variant="destructive"
                         size="sm"
-                        aria-label="Eliminar documento"
+                        aria-label={t('common.delete')}
                     />
                 </div>
             </div>
@@ -167,12 +169,12 @@ export const DocumentItem = ({ document }) => {
             <Dialog open={isDeleteDialogOpen} onOpenChange={(open) => !isDeleting && setIsDeleteDialogOpen(open)}>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
-                        <DialogTitle className="mb-2">Eliminar documento</DialogTitle>
+                        <DialogTitle className="mb-2">{t('documents.delete.title')}</DialogTitle>
                         <DialogDescription>
-                            ¿Estás seguro de que deseas eliminar el documento "{document.titulo}"?
+                            {t('documents.delete.message', { title: document.titulo })}
                             <br />
                             <br />
-                            Esta acción no se puede deshacer.
+                            {t('documents.delete.warning')}
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
@@ -181,7 +183,7 @@ export const DocumentItem = ({ document }) => {
                             onClick={() => setIsDeleteDialogOpen(false)}
                             disabled={isDeleting}
                         >
-                            Cancelar
+                            {t('documents.delete.cancel')}
                         </Button>
                         <Button
                             variant="destructive"
@@ -191,10 +193,10 @@ export const DocumentItem = ({ document }) => {
                             {isDeleting ? (
                                 <span className="flex items-center gap-2">
                                     <Spinner className="h-4 w-4" />
-                                    Eliminando...
+                                    {t('common.deleting')}
                                 </span>
                             ) : (
-                                'Eliminar'
+                                t('documents.delete.confirm')
                             )}
                         </Button>
                     </DialogFooter>

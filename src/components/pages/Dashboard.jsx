@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Navbar } from '../organisms/Navbar'
 import api from '../../services/api'
 import { useDispatch, useSelector } from 'react-redux'
@@ -21,6 +22,7 @@ export const Dashboard = () => {
     const dispatch = useDispatch()
     const loading = useSelector((state) => state.user.loading)
     const [isChatOpen, setIsChatOpen] = useState(false)
+    const { t } = useTranslation()
 
 
     useEffect(() => {
@@ -39,8 +41,8 @@ export const Dashboard = () => {
                 }
 
                 // Solo mostrar error si no es un 404
-                const errorMessage = error.response?.data?.message || error.message || 'Error al cargar las categorías'
-                toast.error('Error al cargar categorías', {
+                const errorMessage = error.response?.data?.message || error.message || t('dashboard.categoriesError')
+                toast.error(t('dashboard.categoriesError'), {
                     description: errorMessage,
                     duration: 5000,
                 })
@@ -55,7 +57,7 @@ export const Dashboard = () => {
         return (
             <div className="w-full h-screen bg-background flex flex-col items-center justify-center gap-4">
                 <Spinner className="h-12 w-12 text-primary" />
-                <p className="text-muted-foreground">Cargando página...</p>
+                <p className="text-muted-foreground">{t('dashboard.loading')}</p>
             </div>
         )
     }
@@ -104,13 +106,13 @@ export const Dashboard = () => {
                         <div className="flex h-full flex-col">
                             {/* Header del drawer */}
                             <div className="flex items-center justify-between border-b p-4">
-                                <CardTitle icon={MessageSquare}>Chat de Prueba</CardTitle>
+                                <CardTitle icon={MessageSquare}>{t('chat.title')}</CardTitle>
                                 <button
                                     onClick={() => setIsChatOpen(false)}
                                     className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                                 >
                                     <X className="h-5 w-5" />
-                                    <span className="sr-only">Cerrar</span>
+                                    <span className="sr-only">{t('common.close')}</span>
                                 </button>
                             </div>
 

@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react'
+import React, { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Formik, Field } from 'formik'
 import { useSelector, useDispatch } from 'react-redux'
 import api from '../../services/api'
 import { toast } from 'sonner'
@@ -14,43 +16,27 @@ import {
 } from '../ui/select'
 import { Button } from '../ui/button'
 import { addDocument, setDocumentCount, clearEditingDocument, updateDocument, setSubmitting } from '../../redux/reducers/documentSlice'
+import { getDocumentSchema } from '../../schemas/documentSchemas'
 
 export const AddDocumentForm = ({ editingDocument }) => {
   const dispatch = useDispatch()
-  const [selectedFile, setSelectedFile] = useState(null)
-  const [title, setTitle] = useState(editingDocument?.titulo || '')
-  const [category, setCategory] = useState(editingDocument?.categoria?._id || '')
+  const { t, i18n } = useTranslation()
   const isSubmitting = useSelector(state => state.documents.isSubmitting)
   const categories = useSelector(state => state.categories.categories)
   const user = useSelector(state => state.user.user)
   const documentCount = useSelector(state => state.documents.documentCount)
 
-  // Actualizar el formulario cuando cambie el documento a editar
-  useEffect(() => {
-    if (editingDocument) {
-      setTitle(editingDocument.titulo || '')
-      setCategory(editingDocument.categoria?._id || '')
-      setSelectedFile(null) // No pre-cargamos el archivo en edición
-    } else {
-      // Limpiar formulario cuando no hay documento a editar
-      setTitle('')
-      setCategory('')
-      setSelectedFile(null)
-    }
-  }, [editingDocument])
+  // Valores iniciales basados en editingDocument
+  const initialValues = useMemo(() => ({
+    titulo: editingDocument?.titulo || '',
+    categoria: editingDocument?.categoria?._id || '',
+    archivo: null
+  }), [editingDocument])
 
-  const handleFileSelect = (file) => {
-    setSelectedFile(file)
-  }
-
-  const handleFileRemove = () => {
-    setSelectedFile(null)
-  }
-
-  // En modo edición, el archivo no es obligatorio si ya existe uno
-  const isFormValid = editingDocument 
-    ? title.trim() !== '' && category !== ''
-    : selectedFile !== null && title.trim() !== '' && category !== ''
+  // Esquema de validación dinámico según si es edición o creación
+  const validationSchema = useMemo(() => {
+    return getDocumentSchema(t, !!editingDocument)
+  }, [editingDocument, i18n.language, t])
 
   const checkPlanLimit = () => {
     if (!user?.plan) return true
@@ -61,8 +47,8 @@ export const AddDocumentForm = ({ editingDocument }) => {
 
     // Verificar si se alcanzó el límite
     if (documentCount >= limit) {
-      toast.error('Límite de documentos alcanzado', {
-        description: `Has alcanzado el límite de ${limit} documentos para tu plan ${user.plan.nombre}.`,
+      toast.error(t('documents.errors.limitReached'), {
+        description: t('documents.errors.limitReachedDesc', { limit, plan: user.plan.nombre }),
         duration: 5000,
       })
       return false
@@ -71,24 +57,24 @@ export const AddDocumentForm = ({ editingDocument }) => {
     return true
   }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    if (!isFormValid) return
-
+  const onSubmit = async (values, actions) => {
     // Verificar límite del plan (solo para creación, no para edición)
-    if (!editingDocument && !checkPlanLimit()) return
+    if (!editingDocument && !checkPlanLimit()) {
+      actions.setSubmitting(false)
+      return
+    }
 
     dispatch(setSubmitting(true))
 
     try {
       // Crear FormData
       const formData = new FormData()
-      formData.append('titulo', title.trim())
-      formData.append('categoria', category)
+      formData.append('titulo', values.titulo.trim())
+      formData.append('categoria', values.categoria)
       
       // Solo agregar archivo si hay uno seleccionado (en edición puede no haber archivo nuevo)
-      if (selectedFile) {
-        formData.append('archivo', selectedFile)
+      if (values.archivo) {
+        formData.append('archivo', values.archivo)
       }
 
       let response
@@ -102,8 +88,8 @@ export const AddDocumentForm = ({ editingDocument }) => {
         )
 
         // Éxito: mostrar notificación
-        toast.success('Documento actualizado exitosamente', {
-          description: `"${title}" ha sido actualizado correctamente.`,
+        toast.success(t('documents.success.updated'), {
+          description: t('documents.success.updatedDesc', { title: values.titulo }),
           duration: 5000,
         })
 
@@ -117,8 +103,8 @@ export const AddDocumentForm = ({ editingDocument }) => {
         )
 
         // Éxito: mostrar notificación
-        toast.success('Documento creado exitosamente', {
-          description: `"${title}" ha sido agregado correctamente.`,
+        toast.success(t('documents.success.created'), {
+          description: t('documents.success.createdDesc', { title: values.titulo }),
           duration: 5000,
         })
 
@@ -130,10 +116,8 @@ export const AddDocumentForm = ({ editingDocument }) => {
       // Limpiar estado de edición en Redux
       dispatch(clearEditingDocument())
 
-      // Limpiar formulario
-      setSelectedFile(null)
-      setTitle('')
-      setCategory('')
+      // Resetear formulario
+      actions.resetForm()
 
       // Limpiar el input de archivo si existe referencia
       const fileInput = document.querySelector('input[type="file"]')
@@ -143,7 +127,7 @@ export const AddDocumentForm = ({ editingDocument }) => {
 
     } catch (error) {
       // Manejo de errores usando mensajes del backend
-      let errorMessage = editingDocument ? 'Error al actualizar el documento' : 'Error al subir el archivo'
+      let errorMessage = editingDocument ? t('documents.errors.update') : t('documents.errors.create')
 
       if (error.response?.data?.message) {
         // Usar el mensaje del backend directamente
@@ -158,73 +142,108 @@ export const AddDocumentForm = ({ editingDocument }) => {
         errorMessage = error.message
       }
 
-      toast.error(editingDocument ? 'Error al actualizar documento' : 'Error al crear documento', {
+      toast.error(editingDocument ? t('documents.errors.update') : t('documents.errors.create'), {
         description: errorMessage,
         duration: 5000,
       })
     } finally {
       dispatch(setSubmitting(false))
+      actions.setSubmitting(false)
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="w-full min-w-0 h-full space-y-6 bg-card p-6 rounded-lg overflow-hidden">
-      {/* Área de carga de archivos */}
-      <FileUploadArea
-        onFileSelect={handleFileSelect}
-        selectedFile={selectedFile}
-        onFileRemove={handleFileRemove}
-        isSubmitting={isSubmitting}
-        editingDocument={editingDocument}
-      />
+    <Formik
+      initialValues={initialValues}
+      validationSchema={validationSchema}
+      onSubmit={onSubmit}
+      enableReinitialize
+    >
+      {({ values, errors, touched, handleSubmit, setFieldValue, isSubmitting: formikSubmitting }) => {
+        const isFormSubmitting = isSubmitting || formikSubmitting
 
-      {/* Campo de título */}
-      <div className="space-y-2">
-        <Label htmlFor="title">Título del documento</Label>
-        <Input
-          id="title"
-          type="text"
-          placeholder="Ej: Manual de usuario"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          disabled={isSubmitting}
-        />
-      </div>
-
-      {/* Campo de categoría */}
-      <div className="space-y-2">
-        <Label htmlFor="category">Categoría</Label>
-        <Select
-          value={category}
-          onValueChange={setCategory}
-          disabled={isSubmitting}
-        >
-          <SelectTrigger id="category">
-            <SelectValue placeholder="Selecciona una categoría" />
-          </SelectTrigger>
-          <SelectContent>
-            {categories.map(cat => (
-              <SelectItem key={cat._id} value={cat._id}>
-                {cat.nombre}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Botón de agregar/editar */}
-      <Button
-        type="submit"
-        className="w-full rounded-md !rounded-md shadow-sm"
-        variant={isFormValid ? "default" : "secondary"}
-        disabled={!isFormValid || isSubmitting}
-      >
-        {isSubmitting 
-          ? (editingDocument ? 'Guardando...' : 'Subiendo...') 
-          : (editingDocument ? 'Guardar Cambios' : 'Agregar Documento')
+        const handleFileSelect = (file) => {
+          setFieldValue('archivo', file)
         }
-      </Button>
-    </form>
+
+        const handleFileRemove = () => {
+          setFieldValue('archivo', null)
+          // Limpiar el input de archivo
+          const fileInput = document.querySelector('input[type="file"]')
+          if (fileInput) {
+            fileInput.value = ''
+          }
+        }
+
+        return (
+          <form onSubmit={handleSubmit} className="w-full min-w-0 h-full space-y-6 bg-card p-6 rounded-lg overflow-hidden">
+            {/* Área de carga de archivos */}
+            <FileUploadArea
+              onFileSelect={handleFileSelect}
+              selectedFile={values.archivo}
+              onFileRemove={handleFileRemove}
+              isSubmitting={isFormSubmitting}
+              editingDocument={editingDocument}
+            />
+            {errors.archivo && touched.archivo && (
+              <p className="text-sm text-destructive">{errors.archivo}</p>
+            )}
+
+            {/* Campo de título */}
+            <div className="space-y-2">
+              <Label htmlFor="titulo">{t('documents.form.titleLabel')}</Label>
+              <Field
+                as={Input}
+                id="titulo"
+                name="titulo"
+                type="text"
+                placeholder={t('documents.form.titlePlaceholder')}
+                disabled={isFormSubmitting}
+              />
+              {errors.titulo && touched.titulo && (
+                <p className="text-sm text-destructive">{errors.titulo}</p>
+              )}
+            </div>
+
+            {/* Campo de categoría */}
+            <div className="space-y-2">
+              <Label htmlFor="categoria">{t('documents.form.categoryLabel')}</Label>
+              <Select
+                value={values.categoria}
+                onValueChange={(value) => setFieldValue('categoria', value)}
+                disabled={isFormSubmitting}
+              >
+                <SelectTrigger id="categoria">
+                  <SelectValue placeholder={t('documents.form.categoryPlaceholder')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map(cat => (
+                    <SelectItem key={cat._id} value={cat._id}>
+                      {cat.nombre}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.categoria && touched.categoria && (
+                <p className="text-sm text-destructive">{errors.categoria}</p>
+              )}
+            </div>
+
+            {/* Botón de agregar/editar */}
+            <Button
+              type="submit"
+              className="w-full rounded-md !rounded-md shadow-sm"
+              disabled={isFormSubmitting}
+            >
+              {isFormSubmitting 
+                ? (editingDocument ? t('documents.form.saving') : t('documents.form.uploading')) 
+                : (editingDocument ? t('documents.form.saveChanges') : t('documents.addNew'))
+              }
+            </Button>
+          </form>
+        )
+      }}
+    </Formik>
   )
 }
 

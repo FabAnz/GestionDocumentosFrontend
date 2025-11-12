@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useDispatch, useSelector } from 'react-redux'
 import api from '../../services/api'
 import { toast } from 'sonner'
@@ -19,6 +20,7 @@ import { AddDocumentForm } from '../molecules/AddDocumentForm'
 
 export const Documents = () => {
     const dispatch = useDispatch()
+    const { t } = useTranslation()
     const editingDocument = useSelector(state => state.documents.editingDocument)
     const isSubmitting = useSelector(state => state.documents.isSubmitting)
     const activeFilter = useSelector(state => state.documents.activeFilter)
@@ -45,8 +47,8 @@ export const Documents = () => {
                 }
 
                 // Solo mostrar error si no es un 404
-                const errorMessage = error.response?.data?.message || error.message || 'Error al cargar los documentos'
-                toast.error('Error al cargar documentos', {
+                const errorMessage = error.response?.data?.message || error.message || t('documents.errors.load')
+                toast.error(t('documents.errors.load'), {
                     description: errorMessage,
                     duration: 5000,
                 })
@@ -82,10 +84,10 @@ export const Documents = () => {
             
             // Usar la ref para determinar el modo
             const isEditing = isEditingRef.current
-            const message = isEditing ? 'Guardando cambios...' : 'Subiendo archivo...'
+            const message = isEditing ? t('documents.errors.saving') : t('documents.errors.uploading')
             const description = isEditing 
-                ? 'Por favor espera mientras se guardan los cambios' 
-                : 'Por favor espera mientras se procesa tu documento'
+                ? t('documents.errors.savingDesc') 
+                : t('documents.errors.uploadingDesc')
             
             // Mostrar toast de carga (sonner tiene un spinner integrado)
             toastIdRef.current = toast.loading(message, {
@@ -116,13 +118,13 @@ export const Documents = () => {
     return (
         <Card>
             <div className="flex flex-row justify-between items-center mb-6">
-                <CardTitle icon={Folder}>Documentos</CardTitle>
+                <CardTitle icon={Folder}>{t('documents.title')}</CardTitle>
                 <Button
                     icon={Plus}
                     className="w-auto"
                     onClick={handleAddDocument}
                 >
-                    Agregar
+                    {t('documents.add')}
                 </Button>
             </div>
 
@@ -132,19 +134,19 @@ export const Documents = () => {
                     active={activeFilter === 'Todo'}
                     onClick={() => dispatch(setActiveFilter('Todo'))}
                 >
-                    Todo
+                    {t('documents.filters.all')}
                 </FilterPill>
                 <FilterPill
                     active={activeFilter === 'Ultima Semana'}
                     onClick={() => dispatch(setActiveFilter('Ultima Semana'))}
                 >
-                    Ultima Semana
+                    {t('documents.filters.lastWeek')}
                 </FilterPill>
                 <FilterPill
                     active={activeFilter === 'Ultimo Mes'}
                     onClick={() => dispatch(setActiveFilter('Ultimo Mes'))}
                 >
-                    Ultimo Mes
+                    {t('documents.filters.lastMonth')}
                 </FilterPill>
             </div>
 
@@ -158,7 +160,7 @@ export const Documents = () => {
                 <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-lg">
                     <DialogHeader>
                         <DialogTitle>
-                            {editingDocument ? 'Editar Documento' : 'Agregar Documento'}
+                            {editingDocument ? t('documents.edit') : t('documents.addNew')}
                         </DialogTitle>
                     </DialogHeader>
                     <AddDocumentForm 

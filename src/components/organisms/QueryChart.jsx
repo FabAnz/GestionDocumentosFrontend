@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useDispatch, useSelector } from 'react-redux'
 import api from '../../services/api'
 import { Card } from '../ui/card'
@@ -22,6 +23,7 @@ import {
 
 export const QueryChart = () => {
   const dispatch = useDispatch()
+  const { t } = useTranslation()
   const { categoryMessages, loading } = useSelector((state) => state.categoryMessages)
 
   useEffect(() => {
@@ -43,8 +45,8 @@ export const QueryChart = () => {
         }
 
         // Solo mostrar error si no es un 404
-        const errorMessage = error.response?.data?.message || error.message || 'Error al cargar las estadísticas de categorías'
-        toast.error('Error al cargar estadísticas', {
+        const errorMessage = error.response?.data?.message || error.message || t('charts.statsError')
+        toast.error(t('charts.statsError'), {
           description: errorMessage,
           duration: 5000,
         })
@@ -68,7 +70,7 @@ export const QueryChart = () => {
 
   return (
     <Card>
-      <CardTitle icon={TrendingUp}>Temas Más Consultados</CardTitle>
+      <CardTitle icon={TrendingUp}>{t('charts.mostConsulted')}</CardTitle>
       <div className="mt-4">
         {loading ? (
           <div className="flex items-center justify-center h-[300px]">
@@ -76,7 +78,7 @@ export const QueryChart = () => {
           </div>
         ) : sortedData.length === 0 ? (
           <div className="flex items-center justify-center h-[300px]">
-            <p className="text-muted-foreground">Aún no hay datos</p>
+            <p className="text-muted-foreground">{t('charts.noData')}</p>
           </div>
         ) : (
           <ResponsiveContainer width="100%" height={300}>

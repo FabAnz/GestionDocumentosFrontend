@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { CardTitle } from '../atoms/CardTitle'
 import { MessageSquare } from 'lucide-react'
 import { UserMessage } from './UserMessage'
@@ -14,6 +15,7 @@ import { Spinner } from '../ui/spinner'
 
 export const ChatContainer = () => {
     const dispatch = useDispatch()
+    const { t } = useTranslation()
     const messages = useSelector((state) => state.chat.messages)
     const loading = useSelector((state) => state.chat.loading)
     const messagesEndRef = useRef(null)
@@ -62,8 +64,8 @@ export const ChatContainer = () => {
                 }
 
                 // Otros errores: mostrar toast
-                const errorMessage = error.response?.data?.message || error.message || 'Error al cargar los mensajes'
-                toast.error('Error al cargar mensajes', {
+                const errorMessage = error.response?.data?.message || error.message || t('chat.errors.load')
+                toast.error(t('chat.errors.load'), {
                     description: errorMessage,
                     duration: 5000,
                 })
@@ -116,8 +118,8 @@ export const ChatContainer = () => {
             }
             setLoadingResponse(false)
         } catch (error) {
-            const errorMessage = error.response?.data?.message || error.message || 'Error al enviar el mensaje'
-            toast.error('Error al enviar mensaje', {
+            const errorMessage = error.response?.data?.message || error.message || t('chat.errors.send')
+            toast.error(t('chat.errors.send'), {
                 description: errorMessage,
                 duration: 5000,
             })
@@ -127,7 +129,7 @@ export const ChatContainer = () => {
 
     return (
         <div className="flex flex-col h-full min-h-0">
-            <CardTitle icon={MessageSquare} className="hidden xl:flex mb-4 px-4 pt-4 flex-shrink-0">Chat de Prueba</CardTitle>
+            <CardTitle icon={MessageSquare} className="hidden xl:flex mb-4 px-4 pt-4 flex-shrink-0">{t('chat.title')}</CardTitle>
             {/* Área de mensajes con scroll */}
             <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-4">
                 {loading ? (
@@ -162,7 +164,7 @@ export const ChatContainer = () => {
             </div>
             {/* Input fijo en la parte inferior */}
             <div className="px-4 pb-4 pt-2 bg-background xl:p-0 xl:bg-transparent flex-shrink-0">
-                <ChatInput onSend={handleSendMessage} placeholder="Escribe tu pregunta..." />
+                <ChatInput onSend={handleSendMessage} placeholder={t('chat.placeholder')} />
             </div>
         </div>
     )

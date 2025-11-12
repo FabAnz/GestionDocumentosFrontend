@@ -1,10 +1,12 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { useSelector } from 'react-redux'
 import { FileText } from 'lucide-react'
 import { Spinner } from '../ui/spinner'
 import { DocumentItem } from './DocumentItem'
 
 export const DocumentList = ({ documents }) => {
+    const { t } = useTranslation()
     const loading = useSelector((state) => state.documents.loading)
 
     if (loading) {
@@ -12,7 +14,7 @@ export const DocumentList = ({ documents }) => {
             <div className="flex items-center justify-center py-12">
                 <div className="flex flex-col items-center gap-3">
                     <Spinner className="w-8 h-8 text-primary" />
-                    <p className="text-sm text-muted-foreground">Cargando documentos...</p>
+                    <p className="text-sm text-muted-foreground">{t('documents.loading')}</p>
                 </div>
             </div>
         )
@@ -24,7 +26,7 @@ export const DocumentList = ({ documents }) => {
                 <div className="text-center">
                     <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-50" />
                     <p className="text-sm text-muted-foreground">
-                        No hay documentos disponibles
+                        {t('documents.empty')}
                     </p>
                 </div>
             </div>

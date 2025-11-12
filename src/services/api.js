@@ -2,6 +2,7 @@ import axios from 'axios'
 import { store } from '../redux/store'
 import { logout } from '../lib/auth'
 import { toast } from 'sonner'
+import i18n from '../i18n'
 
 const apiUrl = import.meta.env.VITE_API_URL
 
@@ -53,8 +54,8 @@ api.interceptors.response.use(
             // Evitar múltiples redirecciones
             if (window.location.pathname !== '/login') {
                 // Mostrar mensaje al usuario
-                toast.error('Sesión expirada', {
-                    description: 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.',
+                toast.error(i18n.t('auth.sessionExpired'), {
+                    description: i18n.t('auth.sessionExpiredDesc'),
                     duration: 5000,
                 })
 

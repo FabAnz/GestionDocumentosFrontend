@@ -1,10 +1,12 @@
 import React, { useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { FileText, Image as ImageIcon, Check, X, AlertTriangle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { Spinner } from '../ui/spinner'
 
 export const FileUploadArea = ({ onFileSelect, selectedFile, onFileRemove, isSubmitting = false, className, editingDocument }) => {
+  const { t } = useTranslation()
   const fileInputRef = useRef(null)
   const [isDragging, setIsDragging] = useState(false)
 
@@ -52,8 +54,8 @@ export const FileUploadArea = ({ onFileSelect, selectedFile, onFileRemove, isSub
         // Limpiar el input
         e.target.value = ''
         // Mostrar error
-        toast.error('Tipo de archivo no permitido', {
-          description: 'Solo se permiten archivos: TXT, PDF, JPG, PNG'
+        toast.error(t('documents.upload.fileTypeError'), {
+          description: t('documents.upload.fileTypeErrorDesc')
         })
       }
     }
@@ -80,8 +82,8 @@ export const FileUploadArea = ({ onFileSelect, selectedFile, onFileRemove, isSub
         }
       } else {
         // Mostrar error
-        toast.error('Tipo de archivo no permitido', {
-          description: 'Solo se permiten archivos: TXT, PDF, JPG, PNG'
+        toast.error(t('documents.upload.fileTypeError'), {
+          description: t('documents.upload.fileTypeErrorDesc')
         })
       }
     }
@@ -172,7 +174,7 @@ export const FileUploadArea = ({ onFileSelect, selectedFile, onFileRemove, isSub
             <div className="w-full min-w-0 px-4 py-3 rounded-md bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 flex items-start gap-3">
               <AlertTriangle className="h-5 w-5 text-yellow-600 dark:text-yellow-500 flex-shrink-0 mt-0.5" />
               <p className="text-sm text-yellow-800 dark:text-yellow-200 text-left min-w-0 break-words">
-                <span className="font-semibold">Advertencia:</span> Solo se extraerá el texto del PDF. Las imágenes no serán procesadas.
+                <span className="font-semibold">{t('documents.upload.pdfWarning')}</span> {t('documents.upload.pdfWarningDesc')}
               </p>
             </div>
           )}
@@ -184,7 +186,7 @@ export const FileUploadArea = ({ onFileSelect, selectedFile, onFileRemove, isSub
             className="mt-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 flex items-center gap-2 hover:bg-accent/50 rounded-md disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
           >
             <X className="h-4 w-4" />
-            Eliminar archivo
+            {t('documents.upload.removeFile')}
           </button>
         </>
       ) : editingDocument ? (
@@ -207,7 +209,7 @@ export const FileUploadArea = ({ onFileSelect, selectedFile, onFileRemove, isSub
               {editingDocument.titulo}
             </p>
             <p className="text-xs text-muted-foreground">
-              Archivo existente
+              {t('documents.upload.existingFile')}
             </p>
           </div>
           
@@ -218,7 +220,7 @@ export const FileUploadArea = ({ onFileSelect, selectedFile, onFileRemove, isSub
             className="mt-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200 flex items-center gap-2 hover:bg-accent/50 rounded-md disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
           >
             <X className="h-4 w-4" />
-            Reemplazar archivo
+            {t('documents.upload.replaceFile')}
           </button>
         </>
       ) : (
@@ -229,10 +231,10 @@ export const FileUploadArea = ({ onFileSelect, selectedFile, onFileRemove, isSub
           </div>
           <div className="text-center">
             <p className="text-sm font-medium text-foreground mb-1">
-              Arrastra archivos aquí o haz clic para seleccionar
+              {t('documents.upload.dragDrop')}
             </p>
             <p className="text-xs text-muted-foreground">
-              Soporta: TXT, PDF, JPG, PNG
+              {t('documents.upload.supported')}
             </p>
           </div>
         </>
