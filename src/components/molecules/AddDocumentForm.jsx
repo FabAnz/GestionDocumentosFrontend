@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import axios from 'axios'
+import api from '../../services/api'
 import { toast } from 'sonner'
 import { FileUploadArea } from './FileUploadArea'
 import { Input } from '../ui/input'
@@ -14,8 +14,6 @@ import {
 } from '../ui/select'
 import { Button } from '../ui/button'
 import { addDocument, setDocumentCount, clearEditingDocument, updateDocument, setSubmitting } from '../../redux/reducers/documentSlice'
-
-const apiUrl = import.meta.env.VITE_API_URL
 
 export const AddDocumentForm = ({ editingDocument }) => {
   const dispatch = useDispatch()
@@ -83,11 +81,6 @@ export const AddDocumentForm = ({ editingDocument }) => {
     dispatch(setSubmitting(true))
 
     try {
-      const token = localStorage.getItem('token')
-      if (!token) {
-        throw new Error('No hay token de autenticación')
-      }
-
       // Crear FormData
       const formData = new FormData()
       formData.append('titulo', title.trim())
@@ -103,14 +96,9 @@ export const AddDocumentForm = ({ editingDocument }) => {
       if (editingDocument) {
         // Modo edición: PUT
         const documentId = editingDocument.id || editingDocument._id
-        response = await axios.put(
-          `${apiUrl}/documentos/${documentId}`,
-          formData,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          }
+        response = await api.put(
+          `/documentos/${documentId}`,
+          formData
         )
 
         // Éxito: mostrar notificación
@@ -123,14 +111,9 @@ export const AddDocumentForm = ({ editingDocument }) => {
         dispatch(updateDocument(response.data))
       } else {
         // Modo creación: POST
-        response = await axios.post(
-          `${apiUrl}/documentos`,
-          formData,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          }
+        response = await api.post(
+          '/documentos',
+          formData
         )
 
         // Éxito: mostrar notificación

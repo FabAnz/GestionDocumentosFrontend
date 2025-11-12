@@ -8,11 +8,9 @@ import { TypingIndicator } from './TypingIndicator'
 import { useDispatch, useSelector } from 'react-redux'
 import { addMessage, setMessages, setLoading } from '../../redux/reducers/chatSlice'
 import { addCategoryMessage } from '../../redux/reducers/categoryMessagesSlice'
-import axios from 'axios'
+import api from '../../services/api'
 import { toast } from 'sonner'
 import { Spinner } from '../ui/spinner'
-
-const apiUrl = import.meta.env.VITE_API_URL
 
 export const ChatContainer = () => {
     const dispatch = useDispatch()
@@ -42,16 +40,9 @@ export const ChatContainer = () => {
 
     useEffect(() => {
         const fetchMessages = async () => {
-            const token = localStorage.getItem('token')
-            if (!token) return
-
             try {
                 dispatch(setLoading(true))
-                const response = await axios.get(`${apiUrl}/mensajes/probar-chat`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                })
+                const response = await api.get('/mensajes/probar-chat')
 
                 // Transformar mensajes del formato del servidor al formato del slice
                 const mensajesTransformados = response.data.mensajes.map((mensaje) => ({
@@ -84,15 +75,6 @@ export const ChatContainer = () => {
     }, [dispatch])
     //TODO: Cargar imagenes en las respuestas de la IA
     const handleSendMessage = async (message) => {
-        const token = localStorage.getItem('token')
-        if (!token) {
-            toast.error('Error', {
-                description: 'No se encontró el token de autenticación',
-                duration: 5000,
-            })
-            return
-        }
-
         // Crear mensaje del usuario para mostrarlo inmediatamente
         const userMessage = {
             id: `temp-${Date.now()}`,
@@ -107,16 +89,11 @@ export const ChatContainer = () => {
 
         try {
             // Enviar mensaje al servidor
-            const response = await axios.post(
-                `${apiUrl}/mensajes/probar-chat`,
+            const response = await api.post(
+                '/mensajes/probar-chat',
                 {
                     idCliente: "cliente-prueba",
                     contenido: message
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
                 }
             )
             // Transformar respuesta de la IA al formato del slice

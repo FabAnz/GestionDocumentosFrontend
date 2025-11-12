@@ -7,10 +7,8 @@ import { Card } from '../ui/card'
 import { useSelector, useDispatch } from 'react-redux'
 import { ProgressBar } from '../atoms/ProgressBar'
 import { upgradeToPremium } from '@/redux/reducers/userSlice'
-import axios from 'axios'
+import api from '../../services/api'
 import { toast } from 'sonner'
-
-const apiUrl = import.meta.env.VITE_API_URL
 
 export const UserPlan = () => {
   const dispatch = useDispatch()
@@ -22,14 +20,8 @@ export const UserPlan = () => {
   const isPremium = plan?.nombre === 'premium'
 
   const handleUpgrade = async () => {
-    const token = localStorage.getItem('token')
-    if (!token) return
     try {
-      const response = await axios.put(`${apiUrl}/usuarios/upgrade-plan`, null,{
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
+      const response = await api.put('/usuarios/upgrade-plan', null)
       console.log(response.data.plan)
       dispatch(upgradeToPremium(response.data.plan))
     } catch (error) {

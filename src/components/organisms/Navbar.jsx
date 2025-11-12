@@ -1,10 +1,41 @@
+import { useEffect } from 'react'
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { LogOut, User } from "lucide-react"
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
+import { logout } from '@/lib/auth'
+import api from '@/services/api'
+import { setUser } from '@/redux/reducers/userSlice'
+import { toast } from 'sonner'
 
 export function Navbar() {
   const user = useSelector((state) => state.user.user)
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
+
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    if (!user && token) {
+      const fetchUser = async () => {
+        try {
+          const response = await api.get('/usuarios/usuario')
+          dispatch(setUser(response.data))
+        } catch (error) {
+          const errorMessage = error.response?.data?.message || error.message || 'Error al cargar datos del usuario'
+          toast.error('Error al cargar usuario', {
+            description: errorMessage,
+            duration: 5000,
+          })
+        }
+      }
+      fetchUser()
+    }
+  }, [user, dispatch])
+
+  const handleLogout = () => {
+    logout(navigate)
+  }
 
   return (
     <nav className="w-full bg-card border-b border-border shadow-xs">
@@ -37,7 +68,8 @@ export function Navbar() {
           {/* Botón de logout con tooltip */}
           <Tooltip>
             <TooltipTrigger asChild>
-              <button 
+              <button
+                onClick={handleLogout}
                 className="h-10 w-10 rounded-full hover:scale-110 active:scale-95 transition-all duration-200 flex items-center justify-center hover:shadow-md hover:bg-accent"
                 aria-label="Cerrar sesión"
               >

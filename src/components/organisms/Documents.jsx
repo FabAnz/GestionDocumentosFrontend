@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import axios from 'axios'
+import api from '../../services/api'
 import { toast } from 'sonner'
 import { Folder, Plus } from 'lucide-react'
 import { Card } from '../ui/card'
@@ -17,8 +17,6 @@ import {
 } from '../ui/dialog'
 import { AddDocumentForm } from '../molecules/AddDocumentForm'
 
-const apiUrl = import.meta.env.VITE_API_URL
-
 export const Documents = () => {
     const dispatch = useDispatch()
     const editingDocument = useSelector(state => state.documents.editingDocument)
@@ -31,16 +29,9 @@ export const Documents = () => {
 
     useEffect(() => {
         const fetchDocuments = async () => {
-            const token = localStorage.getItem('token')
-            if (!token) return
-
             try {
                 dispatch(setLoading(true))
-                const response = await axios.get(`${apiUrl}/documentos`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                })
+                const response = await api.get('/documentos')
                 dispatch(setDocuments(response.data))
                 dispatch(setDocumentCount(response.data.length))
                 dispatch(setLoading(false))

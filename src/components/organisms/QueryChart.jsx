@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import axios from 'axios'
+import api from '../../services/api'
 import { Card } from '../ui/card'
 import { CardTitle } from '../atoms/CardTitle'
 import { TrendingUp } from 'lucide-react'
@@ -20,24 +20,15 @@ import {
   setLoading
 } from '../../redux/reducers/categoryMessagesSlice'
 
-const apiUrl = import.meta.env.VITE_API_URL
-
 export const QueryChart = () => {
   const dispatch = useDispatch()
   const { categoryMessages, loading } = useSelector((state) => state.categoryMessages)
 
   useEffect(() => {
     const fetchCategoryMessages = async () => {
-      const token = localStorage.getItem('token')
-      if (!token) return
-
       try {
         dispatch(setLoading(true))
-        const response = await axios.get(`${apiUrl}/categoria-mensajes`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        })
+        const response = await api.get('/categoria-mensajes')
         
         // Transformar datos si es necesario (asumiendo que vienen con estructura correcta)
         const data = response.data || []

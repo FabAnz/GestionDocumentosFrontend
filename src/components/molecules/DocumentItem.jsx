@@ -4,7 +4,7 @@ import { FileText, Image, Calendar, Pencil, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { IconButton } from '@/components/atoms/IconButton'
 import { setEditingDocument, deleteDocument } from '../../redux/reducers/documentSlice'
-import axios from 'axios'
+import api from '../../services/api'
 import { toast } from 'sonner'
 import {
     Dialog,
@@ -16,8 +16,6 @@ import {
 } from '../ui/dialog'
 import { Button } from '../ui/button'
 import { Spinner } from '../ui/spinner'
-
-const apiUrl = import.meta.env.VITE_API_URL
 
 
 export const DocumentItem = ({ document }) => {
@@ -48,20 +46,8 @@ export const DocumentItem = ({ document }) => {
     const confirmDelete = async () => {
         setIsDeleting(true)
         try {
-            const token = localStorage.getItem('token')
-            if (!token) {
-                throw new Error('No hay token de autenticación')
-            }
-
             const documentId = document.id || document._id
-            await axios.delete(
-                `${apiUrl}/documentos/${documentId}`,
-                {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                }
-            )
+            await api.delete(`/documentos/${documentId}`)
 
             // Cerrar el diálogo
             setIsDeleteDialogOpen(false)
