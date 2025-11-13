@@ -26,7 +26,6 @@ export const DocumentItem = ({ document }) => {
     const [isDeleting, setIsDeleting] = useState(false)
     
     // Formatear fecha
-    //todo: PASAR A UTILITIES
     const formatDate = (dateString) => {
         if (!dateString) return ''
         const date = new Date(dateString)
