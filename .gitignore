@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+/context
+/.cursor
+/AGENT.md
+.env

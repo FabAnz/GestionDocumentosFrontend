@@ -1,6 +1,8 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 
 export const ProgressBar = ({ total, used }) => {
+    const { t } = useTranslation()
     // Calcular el porcentaje de progreso
     const progressPercentage = total > 0
         ? (used / total) * 100
@@ -14,7 +16,7 @@ export const ProgressBar = ({ total, used }) => {
                 aria-valuenow={used}
                 aria-valuemin={0}
                 aria-valuemax={total}
-                aria-label={`${used} de ${total}`}
+                aria-label={t('plans.documentsCount', { count: used, limit: total })}
             />
         </div>
     )

@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { CardTitle } from '../atoms/CardTitle'
 import { Crown, TrendingUp, Sparkles } from 'lucide-react'
 import { capitalize } from '@/lib/utils'
@@ -7,13 +8,12 @@ import { Card } from '../ui/card'
 import { useSelector, useDispatch } from 'react-redux'
 import { ProgressBar } from '../atoms/ProgressBar'
 import { upgradeToPremium } from '@/redux/reducers/userSlice'
-import axios from 'axios'
+import api from '../../services/api'
 import { toast } from 'sonner'
-
-const apiUrl = import.meta.env.VITE_API_URL
 
 export const UserPlan = () => {
   const dispatch = useDispatch()
+  const { t } = useTranslation()
   const plan = useSelector((state) => state.user.user?.plan)
   const documentsCount = useSelector((state) => state.documents.documentCount)
 
@@ -22,19 +22,12 @@ export const UserPlan = () => {
   const isPremium = plan?.nombre === 'premium'
 
   const handleUpgrade = async () => {
-    const token = localStorage.getItem('token')
-    if (!token) return
     try {
-      const response = await axios.put(`${apiUrl}/usuarios/upgrade-plan`, null,{
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
-      console.log(response.data.plan)
+      const response = await api.put('/usuarios/upgrade-plan')
       dispatch(upgradeToPremium(response.data.plan))
     } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message || 'Error al actualizar el plan'
-      toast.error('Error al actualizar plan', {
+      const errorMessage = error.response?.data?.message || error.message || t('plans.error')
+      toast.error(t('plans.error'), {
         description: errorMessage,
         duration: 5000,
       })
@@ -44,15 +37,15 @@ export const UserPlan = () => {
   return (
     <Card>
       <div className="flex flex-row justify-between items-center mb-6">
-        <CardTitle icon={Crown}>Plan {capitalize(plan?.nombre)}</CardTitle>
+        <CardTitle icon={Crown}>{t('plans.title', { plan: capitalize(plan?.nombre) })}</CardTitle>
         {isPlus && (
           <span className="text-muted-foreground text-sm">
-            {documentsCount}/{documentsLimit} documentos
+            {t('plans.documentsCount', { count: documentsCount, limit: documentsLimit })}
           </span>
         )}
         {isPremium && (
           <div className="text-muted-foreground text-sm">
-            Total de documentos: {documentsCount}
+            {t('plans.totalDocuments', { count: documentsCount })}
           </div>
         )}
       </div>
@@ -63,7 +56,7 @@ export const UserPlan = () => {
           <div className="flex justify-center items-center gap-2 px-4 py-3 rounded-full w-full" style={{ backgroundColor: '#F0E6F5' }}>
             <Sparkles className="w-5 h-5 text-orange-500" />
             <span className="text-sm font-medium text-gray-800">
-              Documentos ilimitados y acceso completo
+              {t('plans.unlimited')}
             </span>
           </div>
 
@@ -80,7 +73,7 @@ export const UserPlan = () => {
               className="w-full sm:w-auto"
               onClick={handleUpgrade}
             >
-              Mejorar Plan
+              {t('plans.upgrade')}
             </Button>
           </div>
         </>

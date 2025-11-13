@@ -1,10 +1,11 @@
 import React from 'react'
 import { Card } from '../ui/card'
+import { ChatContainer } from '../molecules/ChatContainer'
 
 export const Chat = () => {
   return (
-    <Card>
-      <div className="text-2xl font-semibold">Chat</div>
+    <Card className="flex flex-col h-[calc(100vh-8rem)] max-h-[calc(100vh-8rem)]">
+      <ChatContainer />
     </Card>
   )
 }
