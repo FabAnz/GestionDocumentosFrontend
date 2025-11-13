@@ -70,7 +70,7 @@ i18n.use(initReactI18next).init({
                     title_required: "El título es obligatorio",
                     category_required: "Debes seleccionar una categoría",
                     file_required: "Debes seleccionar un archivo",
-                    file_type_invalid: "Tipo de archivo no soportado. Solo se permiten: TXT, PDF, JPG, PNG",
+                    file_type_invalid: "Tipo de archivo no soportado. Solo se permiten: TXT, JPG, PNG",
                 },
                 // Documentos
                 documents: {
@@ -103,12 +103,12 @@ i18n.use(initReactI18next).init({
                     },
                     upload: {
                         dragDrop: "Arrastra archivos aquí o haz clic para seleccionar",
-                        supported: "Soporta: TXT, PDF, JPG, PNG",
+                        supported: "Soporta: TXT, JPG, PNG",
                         existingFile: "Archivo existente",
                         removeFile: "Eliminar archivo",
                         replaceFile: "Reemplazar archivo",
                         fileTypeError: "Tipo de archivo no permitido",
-                        fileTypeErrorDesc: "Solo se permiten archivos: TXT, PDF, JPG, PNG",
+                        fileTypeErrorDesc: "Solo se permiten archivos: TXT, JPG, PNG",
                         pdfWarning: "Advertencia:",
                         pdfWarningDesc: "Solo se extraerá el texto del PDF. Las imágenes no serán procesadas.",
                     },
@@ -237,7 +237,7 @@ i18n.use(initReactI18next).init({
                     title_required: "Title is required",
                     category_required: "You must select a category",
                     file_required: "You must select a file",
-                    file_type_invalid: "File type not supported. Only TXT, PDF, JPG, PNG are allowed",
+                    file_type_invalid: "File type not supported. Only TXT, JPG, PNG are allowed",
                 },
                 // Documents
                 documents: {
@@ -270,12 +270,12 @@ i18n.use(initReactI18next).init({
                     },
                     upload: {
                         dragDrop: "Drag files here or click to select",
-                        supported: "Supports: TXT, PDF, JPG, PNG",
+                        supported: "Supports: TXT, JPG, PNG",
                         existingFile: "Existing file",
                         removeFile: "Remove file",
                         replaceFile: "Replace file",
                         fileTypeError: "File type not allowed",
-                        fileTypeErrorDesc: "Only TXT, PDF, JPG, PNG files are allowed",
+                        fileTypeErrorDesc: "Only TXT, JPG, PNG files are allowed",
                         pdfWarning: "Warning:",
                         pdfWarningDesc: "Only text will be extracted from the PDF. Images will not be processed.",
                     },

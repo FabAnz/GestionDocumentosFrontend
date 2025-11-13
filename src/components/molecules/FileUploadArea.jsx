@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { FileText, Image as ImageIcon, Check, X, AlertTriangle } from 'lucide-react'
+import { FileText, Image as ImageIcon, Check, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { Spinner } from '../ui/spinner'
@@ -10,11 +10,10 @@ export const FileUploadArea = ({ onFileSelect, selectedFile, onFileRemove, isSub
   const fileInputRef = useRef(null)
   const [isDragging, setIsDragging] = useState(false)
 
-  // Extensiones permitidas según el texto mostrado: TXT, PDF, JPG, PNG
-  const ALLOWED_EXTENSIONS = ['.txt', '.pdf', '.jpg', '.jpeg', '.png']
+  // Extensiones permitidas según el texto mostrado: TXT, JPG, PNG
+  const ALLOWED_EXTENSIONS = ['.txt', '.jpg', '.jpeg', '.png']
   const ALLOWED_MIME_TYPES = [
     'text/plain',
-    'application/pdf',
     'image/jpeg',
     'image/jpg',
     'image/png'
@@ -116,14 +115,6 @@ export const FileUploadArea = ({ onFileSelect, selectedFile, onFileRemove, isSub
     return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
   }
 
-  // Función para verificar si el archivo es PDF
-  const isPdfFile = (file) => {
-    if (!file) return false
-    const fileName = file.name.toLowerCase()
-    const fileExtension = fileName.substring(fileName.lastIndexOf('.'))
-    return fileExtension === '.pdf' || file.type === 'application/pdf'
-  }
-
   // Determinar si hay un archivo para mostrar (seleccionado o existente)
   const hasFile = selectedFile || editingDocument
   // El área es clickeable cuando no hay archivo seleccionado y no está subiendo
@@ -168,17 +159,6 @@ export const FileUploadArea = ({ onFileSelect, selectedFile, onFileRemove, isSub
               {formatFileSize(selectedFile.size)}
             </p>
           </div>
-          
-          {/* Advertencia para archivos PDF */}
-          {isPdfFile(selectedFile) && (
-            <div className="w-full min-w-0 px-4 py-3 rounded-md bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 flex items-start gap-3">
-              <AlertTriangle className="h-5 w-5 text-yellow-600 dark:text-yellow-500 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-yellow-800 dark:text-yellow-200 text-left min-w-0 break-words">
-                <span className="font-semibold">{t('documents.upload.pdfWarning')}</span> {t('documents.upload.pdfWarningDesc')}
-              </p>
-            </div>
-          )}
-          
           <button
             type="button"
             onClick={handleRemove}
@@ -243,7 +223,7 @@ export const FileUploadArea = ({ onFileSelect, selectedFile, onFileRemove, isSub
         ref={fileInputRef}
         type="file"
         className="hidden"
-        accept=".txt,.pdf,.jpg,.jpeg,.png"
+        accept=".txt,.jpg,.jpeg,.png"
         onChange={handleFileChange}
       />
     </div>

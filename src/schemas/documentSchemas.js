@@ -19,7 +19,6 @@ export const getDocumentSchema = (t, isEditing = false) => {
                 if (!value) return false
                 const allowedTypes = [
                     'text/plain',      // .txt
-                    'application/pdf', // .pdf
                     'image/jpeg',      // .jpg, .jpeg
                     'image/jpg',       // .jpg
                     'image/png'        // .png
